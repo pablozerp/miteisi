@@ -1,4 +1,5 @@
 import "./globals.css";
+import GlobalParticles from '@/components/GlobalParticles';
 
 export const metadata = {
   title: "AcademiCode — Plataforma Académica UNERG",
@@ -19,7 +20,10 @@ export default function RootLayout({ children }) {
         <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
         <meta name="theme-color" content="#0b1326" />
       </head>
-      <body>{children}</body>
+      <body>
+        <GlobalParticles />
+        {children}
+      </body>
     </html>
   );
 }

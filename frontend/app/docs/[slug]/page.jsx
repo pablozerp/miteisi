@@ -20,7 +20,7 @@ export default function LocalDocPage({ params }) {
   if (!doc) return notFound();
 
   return (
-    <main className="min-h-screen bg-[#0b1326] p-4 md:p-8 lg:p-12 relative overflow-hidden">
+    <main className="min-h-screen bg-transparent p-4 md:p-8 lg:p-12 relative overflow-hidden">
       {/* Decorative Orbs */}
       <div className="bg-orb w-[600px] h-[600px] bg-blue-600/10 top-[-200px] left-[-200px]" />
       

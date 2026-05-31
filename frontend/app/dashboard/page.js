@@ -65,7 +65,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-6 lg:p-8 relative overflow-hidden bg-[#0b1326]">
+    <div className="min-h-screen p-4 md:p-6 lg:p-8 relative overflow-hidden bg-transparent">
       {/* Decorative Orbs */}
       <div className="bg-orb w-[800px] h-[800px] bg-blue-600/10 top-[-200px] left-[10%]" />
       <div className="bg-orb w-[600px] h-[600px] bg-orange-600/10 bottom-[-100px] right-[-100px]" />

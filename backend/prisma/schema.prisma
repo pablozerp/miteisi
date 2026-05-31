@@ -11,6 +11,12 @@ datasource db {
   url      = "postgresql://postgres:123456789@localhost:5432/ACADEMICOCODE"
 }
 
+enum Role {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
 
 // Tabla de usuarios (estudiantes UNERG)
 model User {
@@ -20,6 +26,8 @@ model User {
   password  String    // Hasheado con bcrypt
   cedula    String?   @unique // Cédula venezolana (opcional)
   semester  String?   // Semestre actual (opcional)
+  role      Role      @default(USER)
+  isActive  Boolean   @default(true)
   createdAt DateTime  @default(now())
   roadmaps  Roadmap[]
 }
@@ -30,6 +38,6 @@ model Roadmap {
   language  String   // Ej: "Python", "JavaScript"
   nodesData Json     // JSON completo con todos los nodos generados
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }

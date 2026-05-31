@@ -4,8 +4,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { loginUser } from '@/lib/api';
 
-const CODE_PARTICLES = ['{ }', '< />', 'fn()', '[ ]', '===', '&&', '=>', '++', '/**/', '0x1F', 'null', '()', 'async', 'await'];
-
 export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
@@ -27,6 +25,7 @@ export default function LoginPage() {
       const data = await loginUser(form.email, form.password);
       localStorage.setItem('token', data.token);
       localStorage.setItem('userName', data.name);
+      localStorage.setItem('userRole', data.role || 'USER');
       router.replace('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Credenciales incorrectas. Intenta de nuevo.');
@@ -36,26 +35,10 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#0b1326]">
+    <main className="min-h-screen flex items-center justify-center relative overflow-hidden bg-transparent">
       {/* Decorative Orbs */}
       <div className="bg-orb w-[600px] h-[600px] bg-blue-600/20 top-[-100px] left-[-200px]" />
       <div className="bg-orb w-[500px] h-[500px] bg-orange-600/10 bottom-[-100px] right-[-100px]" />
-
-      {/* Floating Code Particles */}
-      {CODE_PARTICLES.map((code, i) => (
-        <span
-          key={i}
-          className="particle"
-          style={{
-            left: `${10 + (i * 7) % 80}%`,
-            animationDuration: `${15 + i * 2}s`,
-            animationDelay: `${i * 1.5}s`,
-            color: i % 2 === 0 ? 'var(--primary-light)' : 'var(--accent-light)',
-          }}
-        >
-          {code}
-        </span>
-      ))}
 
       {/* Login Card */}
       <div className="glass-card glass-card-hover p-10 w-full max-w-md relative z-10 mx-4 animate-fade-in-up">

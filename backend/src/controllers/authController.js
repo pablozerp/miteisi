@@ -57,6 +57,11 @@ const login = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
+    // Verificar si está activo
+    if (!user.isActive) {
+      return res.status(403).json({ error: 'Tu cuenta ha sido bloqueada. Contacta al administrador.' });
+    }
+
     // Verificar contraseña
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
@@ -65,7 +70,7 @@ const login = async (req, res) => {
 
     // Generar JWT (expira en 8 horas)
     const token = jwt.sign(
-      { userId: user.id, name: user.name, email: user.email },
+      { userId: user.id, name: user.name, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
@@ -74,6 +79,7 @@ const login = async (req, res) => {
       token,
       name: user.name,
       userId: user.id,
+      role: user.role,
     });
   } catch (error) {
     console.error('Error en login:', error);

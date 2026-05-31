@@ -56,7 +56,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center relative overflow-hidden py-12 bg-[#0b1326]">
+    <main className="min-h-screen flex items-center justify-center relative overflow-hidden py-12 bg-transparent">
       {/* Decorative Orbs */}
       <div className="bg-orb w-[600px] h-[600px] bg-blue-600/20 top-[-100px] left-[-200px]" />
       <div className="bg-orb w-[500px] h-[500px] bg-orange-600/10 bottom-[-100px] right-[-100px]" />

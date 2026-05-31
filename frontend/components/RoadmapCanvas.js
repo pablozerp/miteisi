@@ -11,8 +11,7 @@ import 'reactflow/dist/style.css';
 import { useEffect, useMemo } from 'react';
 import NodeCard from './NodeCard';
 
-// Definiendo nodeTypes fuera del componente evita el re-render infinito (warning reactflow)
-const nodeTypes = { customNode: NodeCard };
+// Se define nodeTypes dentro usando useMemo para evitar warnings en fast refresh
 
 const getLevelColor = (level) => {
   switch (level) {
@@ -26,6 +25,7 @@ const getLevelColor = (level) => {
 export default function RoadmapCanvas({ roadmapNodes, selectedNodeId, onNodeSelect }) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const nodeTypes = useMemo(() => ({ customNode: NodeCard }), []);
 
   // Calculate Tree Layout
   const calculateLayout = (nodesData) => {

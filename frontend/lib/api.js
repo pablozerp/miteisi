@@ -38,3 +38,61 @@ export const getMyRoadmaps = async () => {
   });
   return res.data; // { roadmaps: [...] }
 };
+
+// ===================== ADMIN =====================
+
+export const getAdminStats = async () => {
+  const res = await axios.get(`${API_BASE}/admin/stats`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+export const getAdminUsers = async () => {
+  const res = await axios.get(`${API_BASE}/admin/users`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+export const toggleUserStatus = async (userId) => {
+  const res = await axios.post(`${API_BASE}/admin/users/${userId}/toggle-status`, {}, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+export const assignUserRole = async (userId, role) => {
+  const res = await axios.post(`${API_BASE}/admin/users/${userId}/assign-role`, { role }, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+export const getWeeklyStats = async () => {
+  const res = await axios.get(`${API_BASE}/admin/weekly-stats`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+export const createAdminUser = async (userData) => {
+  const res = await axios.post(`${API_BASE}/admin/users`, userData, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+export const updateAdminUser = async (userId, userData) => {
+  const res = await axios.put(`${API_BASE}/admin/users/${userId}`, userData, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+export const deleteAdminUser = async (userId) => {
+  const res = await axios.delete(`${API_BASE}/admin/users/${userId}`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};

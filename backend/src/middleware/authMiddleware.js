@@ -18,4 +18,18 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-module.exports = { verifyToken };
+const requireRole = (roles) => {
+  return (req, res, next) => {
+    if (!req.user || !req.user.role) {
+      return res.status(401).json({ error: 'Falta información de rol en el token' });
+    }
+    
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Acceso denegado: Permisos insuficientes' });
+    }
+    
+    next();
+  };
+};
+
+module.exports = { verifyToken, requireRole };
