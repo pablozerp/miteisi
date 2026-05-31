@@ -16,16 +16,15 @@ const openai = new OpenAI({
  */
 const generateRoadmapWithGemini = async (language) => {
   const prompt = `
-Eres un experto en educación en programación. Genera una hoja de ruta de aprendizaje estructurada para el lenguaje de programación: "${language}".
+Eres un experto en educación en programación. Genera una hoja de ruta de aprendizaje estructurada para el lenguaje/tecnología: "${language}".
 
 La hoja de ruta debe estar orientada a estudiantes universitarios de Ingeniería en Sistemas en Venezuela (UNERG).
 
 INSTRUCCIONES IMPORTANTES:
-- Genera entre 6 y 10 nodos (pasos de aprendizaje).
-- Cada nodo debe tener una secuencia lógica (de básico a avanzado).
+- Genera entre 6 y 9 nodos (pasos de aprendizaje) lógicos (de básico a avanzado).
 - Incluye links de YouTube de videos educativos REALES y en español cuando sea posible.
-- En el array de "documentation", el campo "url" NO debe ser un enlace HTTP. Debe ser ÚNICAMENTE una frase clave de búsqueda optimizada para Google que sirva para encontrar la mejor documentación oficial o tutorial de ese tema específico en el lenguaje "${language}" (por ejemplo: "Documentación oficial ${language} estructuras de control" o "W3Schools ${language} funciones"). Cada nodo debe tener frases de búsqueda distintas y variadas según su contenido.
-- La frase debe estar optimizada, por ejemplo: "Documentación oficial ${language} estructuras de control" o "MDN Web Docs ${language} promesas".
+- Para "documentation", el campo "url" DEBE ser una URL HTTPS real y directa a la documentación oficial o al mejor recurso disponible (ej: "https://docs.python.org/3/tutorial/controlflow.html"). Si no sabes la URL exacta, pon la URL base de la documentación. NO uses frases de búsqueda.
+- Para cada elemento en "documentation" y "videos", DEBES incluir un campo "summary" detallado y conversacional dirigido al estudiante (máximo 150 caracteres). Ejemplo: "Aquí aprenderás leyendo la documentación oficial donde encontrarás conceptos clave como qué es un API y cómo funcionan los microservicios."
 - Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin bloques de código.
 
 FORMATO EXACTO DEL JSON:
@@ -34,19 +33,20 @@ FORMATO EXACTO DEL JSON:
     "id": "node-1",
     "title": "Nombre del tema",
     "description": "Descripción breve de lo que aprenderás en este paso",
-    "doc_search_term": "Documentación oficial Python funciones",
     "level": "Básico | Intermedio | Avanzado",
     "topics": ["tema1", "tema2", "tema3"],
     "documentation": [
       {
         "title": "Nombre del recurso",
-        "url": "https://..."
+        "url": "https://...",
+        "summary": "Breve descripción de lo que ofrece esta documentación."
       }
     ],
     "videos": [
       {
         "title": "Título del video",
-        "url": "https://www.youtube.com/watch?v=..."
+        "url": "https://www.youtube.com/watch?v=...",
+        "summary": "Breve descripción de lo que enseña este video."
       }
     ],
     "position": { "x": 0, "y": 0 },
@@ -59,8 +59,7 @@ FORMATO EXACTO DEL JSON:
   }
 ]
 
-El campo "dependsOn" indica de qué nodos anteriores depende (para construir las aristas del grafo).
-El campo "position" será calculado automáticamente por el frontend, puedes dejarlo en { "x": 0, "y": 0 }.
+El campo "dependsOn" indica de qué nodos anteriores depende.
 `;
 
   try {

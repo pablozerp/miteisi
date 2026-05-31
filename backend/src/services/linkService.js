@@ -20,8 +20,20 @@ const OFFICIAL_DOCS = {
     { title: 'Tour of Go', url: 'https://go.dev/tour/' }
   ],
   rust: [
-    { title: 'The Rust Programming Language', url: 'https://doc.rust-lang.org/book/' },
-    { title: 'Rust By Example', url: 'https://doc.rust-lang.org/rust-by-example/' }
+    { title: 'The Rust Programming Language', url: 'https://doc.rust-lang.org/book/', summary: 'Libro oficial exhaustivo sobre Rust.' },
+    { title: 'Rust By Example', url: 'https://doc.rust-lang.org/rust-by-example/', summary: 'Aprende Rust a través de ejemplos prácticos.' }
+  ],
+  react: [
+    { title: 'Documentación Oficial de React', url: 'https://react.dev/', summary: 'Guía oficial para aprender y referenciar React.' }
+  ],
+  typescript: [
+    { title: 'Manual de TypeScript', url: 'https://www.typescriptlang.org/docs/handbook/intro.html', summary: 'Guía completa sobre el lenguaje TypeScript.' }
+  ],
+  'node.js': [
+    { title: 'Node.js Docs', url: 'https://nodejs.org/en/docs/', summary: 'Documentación oficial de la API de Node.js.' }
+  ],
+  nestjs: [
+    { title: 'Documentación de NestJS', url: 'https://docs.nestjs.com/', summary: 'Guía oficial del framework NestJS.' }
   ]
 };
 
@@ -82,6 +94,7 @@ const getYouTubeVideos = async (searchQuery, maxResults = 5) => {
       validVideos.push({
         title: item.snippet.title,
         url: `https://www.youtube.com/watch?v=${videoId}`,
+        summary: item.snippet.description?.slice(0, 120) + '...',
       });
       if (validVideos.length >= 2) break;
     }
@@ -108,15 +121,11 @@ const enrichRoadmapLinks = async (nodes, language) => {
         : [];
 
       let videos = [...existingVideos];
-      const searchQueries = [
-        `${language} ${node.title} tutorial en español`,
-        `${language} ${node.title} curso en español`,
-        `${language} ${node.title} explicación en español`,
-      ];
-
-      for (const query of searchQueries) {
-        if (videos.length >= 2) break;
-        const youtubeVideos = await getYouTubeVideos(query, 5);
+      // Solo 1 búsqueda optimizada en lugar de 3 para acelerar
+      const query = `${language} ${node.title} curso en español`;
+      
+      if (videos.length < 2) {
+        const youtubeVideos = await getYouTubeVideos(query, 3);
         for (const video of youtubeVideos) {
           if (!videos.some((existing) => existing.url === video.url)) {
             videos.push(video);
