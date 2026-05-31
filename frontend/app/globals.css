@@ -1,0 +1,155 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* ==============================
+   AcademiCode — Global Styles
+   Tema: "The Illuminated Codex"
+   Paleta: #3B82F6 (Blue) + #D16900 (Orange)
+   ============================== */
+
+/* CSS Variables */
+:root {
+  --surface: #0b1326;
+  --surface-low: #131b2e;
+  --surface-card: #171f33;
+  --surface-high: #222a3d;
+  --primary: #3B82F6;
+  --accent: #D16900;
+  --text-primary: #dae2fd;
+  --text-secondary: #8b95b0;
+  --border-ghost: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--surface);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* Glassmorphism Card */
+.glass-card {
+  background: rgba(23, 31, 51, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-ghost);
+  border-radius: 1rem;
+}
+
+/* Gradient Button */
+.btn-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(59, 130, 246, 0.4), 0 4px 20px rgba(209, 105, 0, 0.2);
+}
+
+/* Input Glass Style */
+.input-glass {
+  background: rgba(6, 14, 32, 0.6);
+  border: 1px solid var(--border-ghost);
+  border-radius: 0.75rem;
+  padding: 0.875rem 1rem;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.input-glass::placeholder {
+  color: var(--text-secondary);
+}
+
+.input-glass:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-high);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* React Flow customization */
+.react-flow__background {
+  background-color: var(--surface) !important;
+}
+
+.react-flow__minimap {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--border-ghost) !important;
+}
+
+.react-flow__controls {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--border-ghost) !important;
+}
+
+.react-flow__controls-button {
+  background: var(--surface-card) !important;
+  border-bottom: 1px solid var(--border-ghost) !important;
+  color: var(--text-primary) !important;
+  fill: var(--text-primary) !important;
+}
+
+/* Floating code particles animation */
+@keyframes float-up {
+  0% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.15;
+  }
+  90% {
+    opacity: 0.15;
+  }
+  100% {
+    transform: translateY(-100px) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+.particle {
+  position: fixed;
+  font-family: 'Fira Code', monospace;
+  color: var(--primary);
+  font-size: 0.7rem;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 0;
+  animation: float-up linear infinite;
+}
