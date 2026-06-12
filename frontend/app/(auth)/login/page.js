@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, @next/next/no-img-element */
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -24,7 +26,7 @@ export default function LoginPage() {
     try {
       const data = await loginUser(form.email, form.password);
       localStorage.setItem('token', data.token);
-      localStorage.setItem('userName', data.name);
+      localStorage.setItem('userName', `${data.firstName} ${data.lastName}`);
       localStorage.setItem('userRole', data.role || 'USER');
       router.replace('/dashboard');
     } catch (err) {
@@ -102,13 +104,33 @@ export default function LoginPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                className="input-glass"
+                className="input-glass pr-12"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 required
               />
+              <button
+                type="button"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                onMouseDown={() => setShowPassword(true)}
+                onMouseUp={() => setShowPassword(false)}
+                onMouseLeave={() => setShowPassword(false)}
+                onTouchStart={() => setShowPassword(true)}
+                onTouchEnd={() => setShowPassword(false)}
+              >
+                {showPassword ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.05 10.05 0 011.354-2.836M15.536 8.464a10.05 10.05 0 012.006 1.7A10.05 10.05 0 0121.542 12c-1.274 4.057-5.064 7-9.542 7-.84 0-1.65-.11-2.43-.311M9 12a3 3 0 003 3m-3-3a3 3 0 013-3m-3 3l6 6m-6-6l-6-6" />
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
 

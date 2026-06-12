@@ -39,6 +39,15 @@ export const getMyRoadmaps = async () => {
   return res.data; // { roadmaps: [...] }
 };
 
+export const compareRoadmap = async (langA, langB) => {
+  const res = await axios.post(
+    `${API_BASE}/roadmap/compare`,
+    { langA, langB },
+    { headers: getAuthHeader() }
+  );
+  return res.data; // { langA, langB, comparison, nodesA, nodesB }
+};
+
 // ===================== ADMIN =====================
 
 export const getAdminStats = async () => {

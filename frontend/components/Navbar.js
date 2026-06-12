@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 'use client';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -28,6 +29,14 @@ export default function Navbar({ userName, onLogout }) {
 
       {/* User & Logout */}
       <div className="flex items-center gap-4">
+        {/* Chat Link */}
+        <Link href="/chat" className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500/20 transition-all font-semibold text-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          Chat
+        </Link>
+
         {(userRole === 'ADMIN' || userRole === 'SUPERADMIN') && (
           <Link href="/admin" className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 transition-all font-semibold text-sm">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

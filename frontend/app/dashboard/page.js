@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -5,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import SearchBar from '@/components/SearchBar';
 import RoadmapCanvas from '@/components/RoadmapCanvas';
 import NodeDetailPanel from '@/components/NodeDetailPanel';
-import { generateRoadmap, getMyRoadmaps } from '@/lib/api';
+import { generateRoadmap, getMyRoadmaps, compareRoadmap } from '@/lib/api';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export default function DashboardPage() {
   const [currentLanguage, setCurrentLanguage] = useState('');
   const [recentRoadmaps, setRecentRoadmaps] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [comparison, setComparison] = useState(null);
+  const [compareLoading, setCompareLoading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -53,6 +56,22 @@ export default function DashboardPage() {
     }
   };
 
+  const handleCompare = async (langA, langB) => {
+    setCompareLoading(true);
+    setComparison(null);
+    setNodes(null);
+    setError('');
+    try {
+      const data = await compareRoadmap(langA, langB);
+      setComparison(data);
+      setSelectedNode(null);
+    } catch (err) {
+      setError('Error al generar la comparación. Verifica tu conexión o intenta de nuevo.');
+    } finally {
+      setCompareLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.clear();
     router.push('/login');
@@ -84,7 +103,7 @@ export default function DashboardPage() {
           <p className="text-slate-400 text-lg max-w-2xl mx-auto mb-8 font-medium">
             Nuestra IA generará un plan de estudios estructurado paso a paso con documentación oficial y videos seleccionados para ti.
           </p>
-          <SearchBar onSearch={handleSearch} loading={loading} />
+          <SearchBar onSearch={handleSearch} onCompare={handleCompare} loading={loading || compareLoading} />
         </div>
 
         {/* Stats Cards */}
@@ -232,7 +251,7 @@ export default function DashboardPage() {
         )}
 
         {/* Empty State */}
-        {!nodes && !loading && recentRoadmaps.length === 0 && (
+        {!nodes && !loading && !comparison && !compareLoading && recentRoadmaps.length === 0 && (
           <div className="text-center mt-20 animate-fade-in-up delay-300">
             <div className="relative inline-flex items-center justify-center w-32 h-32 mb-6">
               <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
@@ -247,7 +266,172 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Loading overlay */}
+        {/* Comparison Result */}
+        {comparison && !compareLoading && (
+          <div className="animate-fade-in-up">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-white/5 p-4 rounded-2xl border border-white/10">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl font-extrabold text-blue-400">{comparison.langA}</span>
+                  <span className="px-3 py-1 rounded-full bg-orange-500/20 border border-orange-500/30 text-orange-400 font-black text-sm">VS</span>
+                  <span className="text-2xl font-extrabold text-orange-400">{comparison.langB}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setComparison(null)}
+                className="btn-outline-glow flex items-center justify-center gap-2 text-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Volver al Panel
+              </button>
+            </div>
+
+            {/* Summary */}
+            {comparison.comparison && (
+              <div className="space-y-5">
+                <div className="glass-card p-6">
+                  <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">Resumen</h3>
+                  <p className="text-slate-200 leading-relaxed">{comparison.comparison.summary}</p>
+                </div>
+
+                {/* Difficulty */}
+                {comparison.comparison.difficulty && (
+                  <div className="grid grid-cols-2 gap-4">
+                    {[comparison.langA, comparison.langB].map((lang, i) => (
+                      <div key={lang} className={`glass-card p-5 border-t-2 ${i === 0 ? 'border-blue-500' : 'border-orange-500'}`}>
+                        <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Dificultad · {lang}</p>
+                        <p className={`text-2xl font-extrabold ${i === 0 ? 'text-blue-400' : 'text-orange-400'}`}>
+                          {comparison.comparison.difficulty[lang] || '—'}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Strengths & Weaknesses */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {[comparison.langA, comparison.langB].map((lang, i) => (
+                    <div key={lang} className="glass-card p-6">
+                      <h4 className={`font-extrabold text-lg mb-4 ${i === 0 ? 'text-blue-400' : 'text-orange-400'}`}>{lang}</h4>
+                      {comparison.comparison.strengths?.[lang] && (
+                        <div className="mb-4">
+                          <p className="text-xs font-bold text-green-400 uppercase tracking-wider mb-2">✅ Fortalezas</p>
+                          <ul className="space-y-1">
+                            {comparison.comparison.strengths[lang].map((s, j) => (
+                              <li key={j} className="text-sm text-slate-300 flex gap-2"><span className="text-green-500 mt-0.5">•</span>{s}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {comparison.comparison.weaknesses?.[lang] && (
+                        <div className="mb-4">
+                          <p className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">⚠️ Debilidades</p>
+                          <ul className="space-y-1">
+                            {comparison.comparison.weaknesses[lang].map((w, j) => (
+                              <li key={j} className="text-sm text-slate-300 flex gap-2"><span className="text-red-500 mt-0.5">•</span>{w}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {comparison.comparison.useCases?.[lang] && (
+                        <div>
+                          <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">🎯 Casos de Uso</p>
+                          <ul className="space-y-1">
+                            {comparison.comparison.useCases[lang].map((u, j) => (
+                              <li key={j} className="text-sm text-slate-300 flex gap-2"><span className="text-indigo-400 mt-0.5">•</span>{u}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Verdict */}
+                {comparison.comparison.verdict && (
+                  <div className="glass-card p-6 border border-amber-500/20 bg-amber-500/5">
+                    <h3 className="text-sm font-bold text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <span>⚖️</span> Veredicto Final
+                    </h3>
+                    <p className="text-slate-200 leading-relaxed">{comparison.comparison.verdict}</p>
+                  </div>
+                )}
+                {/* Comparative Canvases */}
+                {(comparison.nodesA?.length > 0 || comparison.nodesB?.length > 0) && (
+                  <div className="mt-6 space-y-6">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <span>🗺️</span> Hojas de Ruta Comparativas
+                    </h3>
+
+                    {/* Canvas A */}
+                    {comparison.nodesA?.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-xs font-black text-white">A</span>
+                          <h4 className="text-lg font-extrabold text-blue-400">{comparison.langA}</h4>
+                        </div>
+                        <div className="relative w-full overflow-hidden rounded-2xl flex">
+                          <div className={`flex-1 transition-all duration-500 ${selectedNode?.id?.startsWith('a-') ? 'sm:mr-[400px]' : ''}`}>
+                            <RoadmapCanvas
+                              roadmapNodes={comparison.nodesA}
+                              selectedNodeId={selectedNode?.id}
+                              onNodeSelect={(nodeData) => setSelectedNode(nodeData)}
+                            />
+                          </div>
+                          <NodeDetailPanel
+                            node={selectedNode?.id?.startsWith('a-') ? selectedNode : null}
+                            onClose={() => setSelectedNode(null)}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Canvas B */}
+                    {comparison.nodesB?.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-xs font-black text-white">B</span>
+                          <h4 className="text-lg font-extrabold text-orange-400">{comparison.langB}</h4>
+                        </div>
+                        <div className="relative w-full overflow-hidden rounded-2xl flex">
+                          <div className={`flex-1 transition-all duration-500 ${selectedNode?.id?.startsWith('b-') ? 'sm:mr-[400px]' : ''}`}>
+                            <RoadmapCanvas
+                              roadmapNodes={comparison.nodesB}
+                              selectedNodeId={selectedNode?.id}
+                              onNodeSelect={(nodeData) => setSelectedNode(nodeData)}
+                            />
+                          </div>
+                          <NodeDetailPanel
+                            node={selectedNode?.id?.startsWith('b-') ? selectedNode : null}
+                            onClose={() => setSelectedNode(null)}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Loading overlay — para comparación */}
+        {compareLoading && (
+          <div className="text-center mt-24 animate-fade-in-up">
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="absolute inset-0 rounded-full border-4 border-white/10" />
+              <div className="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
+              <div className="absolute inset-2 rounded-full border-4 border-orange-500/50 border-b-transparent animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }} />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Analizando lenguajes con IA...</h3>
+            <p className="text-slate-400 text-sm">Comparando <span className="text-blue-400 font-bold">{comparison?.langA}</span> vs <span className="text-orange-400 font-bold">{comparison?.langB}</span></p>
+          </div>
+        )}
+
+        {/* Loading overlay — para generación normal */}
         {loading && (
           <div className="text-center mt-24 animate-fade-in-up">
             <div className="relative w-20 h-20 mx-auto mb-6">
