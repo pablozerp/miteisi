@@ -5,10 +5,16 @@ const prisma = new PrismaClient();
 
 // POST /api/auth/register
 const register = async (req, res) => {
-  const { name, email, password, cedula, semester } = req.body;
+  const { firstName, middleName, lastName, secondLastName, email, password, phone, cedula, semester } = req.body;
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: 'Nombre, email y contraseña son obligatorios' });
+  if (!firstName || !lastName || !email || !password || !phone) {
+    return res.status(400).json({ error: 'Nombre, apellido, email, contraseña y teléfono son obligatorios' });
+  }
+
+  // Validar contraseña
+  const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres, una mayúscula, un número y un carácter especial' });
   }
 
   try {
@@ -24,7 +30,11 @@ const register = async (req, res) => {
     // Crear usuario
     const user = await prisma.user.create({
       data: {
-        name,
+        firstName,
+        middleName: middleName || null,
+        lastName,
+        secondLastName: secondLastName || null,
+        phone,
         email,
         password: hashedPassword,
         cedula: cedula || null,
@@ -70,14 +80,15 @@ const login = async (req, res) => {
 
     // Generar JWT (expira en 8 horas)
     const token = jwt.sign(
-      { userId: user.id, name: user.name, email: user.email, role: user.role },
+      { userId: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '8h' }
     );
 
     res.json({
       token,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       userId: user.id,
       role: user.role,
     });

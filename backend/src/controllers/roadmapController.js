@@ -1,4 +1,4 @@
-const { generateRoadmapWithGemini } = require('../services/geminiService');
+const { generateRoadmapWithGemini, generateComparativeRoadmap } = require('../services/geminiService');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -67,4 +67,28 @@ const getMyRoadmaps = async (req, res) => {
   }
 };
 
-module.exports = { generateRoadmap, getMyRoadmaps };
+// POST /api/roadmap/compare
+const compareRoadmaps = async (req, res) => {
+  const { langA, langB } = req.body;
+
+  if (!langA || !langB) {
+    return res.status(400).json({ error: 'Debes especificar dos lenguajes para comparar (langA y langB)' });
+  }
+
+  if (langA.trim().toLowerCase() === langB.trim().toLowerCase()) {
+    return res.status(400).json({ error: 'Los dos lenguajes a comparar deben ser diferentes' });
+  }
+
+  try {
+    console.log(`🔄 Generando comparación: "${langA}" vs "${langB}"...`);
+    const result = await generateComparativeRoadmap(langA.trim(), langB.trim());
+    console.log(`✅ Comparación "${langA}" vs "${langB}" generada correctamente`);
+    res.json(result);
+  } catch (error) {
+    console.error('❌ Error al generar comparación:', error.message);
+    res.status(500).json({ error: 'Error al generar la comparación con la IA' });
+  }
+};
+
+module.exports = { generateRoadmap, getMyRoadmaps, compareRoadmaps };
+

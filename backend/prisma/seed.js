@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Iniciando seedeo de administradores...');
 
-  const passwordHash = await bcrypt.hash('123456', 10);
+  const passwordHash = await bcrypt.hash('Admin@1234', 10);
 
   // Crear Súper Admin
   const superAdmin = await prisma.user.upsert({
@@ -14,7 +14,8 @@ async function main() {
     update: {},
     create: {
       email: 'superadmin@unerg.edu.ve',
-      name: 'Súper Administrador',
+      firstName: 'Súper',
+      lastName: 'Administrador',
       password: passwordHash,
       role: 'SUPERADMIN',
       isActive: true,
@@ -27,7 +28,8 @@ async function main() {
     update: {},
     create: {
       email: 'admin@unerg.edu.ve',
-      name: 'Administrador UNERG',
+      firstName: 'Admin',
+      lastName: 'UNERG',
       password: passwordHash,
       role: 'ADMIN',
       isActive: true,
@@ -35,8 +37,8 @@ async function main() {
   });
 
   console.log('✅ Usuarios de prueba creados:');
-  console.log(`- SUPERADMIN: ${superAdmin.email} | Clave: 123456`);
-  console.log(`- ADMIN: ${admin.email} | Clave: 123456`);
+  console.log(`- SUPERADMIN: superadmin@unerg.edu.ve | Clave: Admin@1234`);
+  console.log(`- ADMIN: admin@unerg.edu.ve | Clave: Admin@1234`);
 }
 
 main()

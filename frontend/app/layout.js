@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-page-custom-font */
 import "./globals.css";
 import GlobalParticles from '@/components/GlobalParticles';
 

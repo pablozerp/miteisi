@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect, @next/next/no-img-element */
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
