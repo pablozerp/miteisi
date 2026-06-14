@@ -105,3 +105,21 @@ export const deleteAdminUser = async (userId) => {
   });
   return res.data;
 };
+
+// ===================== CODE EXECUTION =====================
+
+export const executeCode = async (code, language, stdin = '') => {
+  const res = await axios.post(
+    `${API_BASE}/code/execute`,
+    { code, language, stdin },
+    { headers: getAuthHeader() }
+  );
+  return res.data; // { success, output, error, executionTime, language }
+};
+
+export const getLanguages = async () => {
+  const res = await axios.get(`${API_BASE}/code/languages`, {
+    headers: getAuthHeader(),
+  });
+  return res.data; // { languages: [...] }
+};

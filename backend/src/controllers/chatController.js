@@ -26,13 +26,15 @@ const getMessages = async (req, res) => {
   }
 };
 
-const saveMessage = async (senderId, receiverId, content, imageUrl) => {
+const saveMessage = async (senderId, receiverId, content, imageUrl, codeContent, codeLanguage) => {
   return await prisma.message.create({
     data: {
       senderId: parseInt(senderId),
       receiverId: parseInt(receiverId),
       content,
       imageUrl: imageUrl || null,
+      codeContent: codeContent || null,
+      codeLanguage: codeLanguage || null,
     },
   });
 };

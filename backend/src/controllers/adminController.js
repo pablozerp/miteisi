@@ -38,7 +38,8 @@ const getUsers = async (req, res) => {
       where: whereClause,
       select: {
         id: true,
-        name: true,
+        firstName: true,
+        lastName: true,
         email: true,
         cedula: true,
         semester: true,
@@ -110,7 +111,7 @@ const bcrypt = require('bcrypt');
 
 // POST /api/admin/users
 const createUser = async (req, res) => {
-  const { name, email, password, cedula, semester, role } = req.body;
+  const { firstName, lastName, email, password, cedula, semester, role } = req.body;
   try {
     const isSuperAdmin = req.user.role === 'SUPERADMIN';
     // ADMIN normal no puede crear SUPERADMINs ni otros ADMINs (a menos que lo permitamos, pero es mejor restringirlo)
@@ -121,7 +122,8 @@ const createUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
-        name,
+        firstName,
+        lastName: lastName || '',
         email,
         password: hashedPassword,
         cedula: cedula || null,
@@ -138,7 +140,7 @@ const createUser = async (req, res) => {
 // PUT /api/admin/users/:id
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, cedula, semester, role } = req.body;
+  const { firstName, lastName, email, cedula, semester, role } = req.body;
   try {
     const targetUser = await prisma.user.findUnique({ where: { id: Number(id) } });
     if (!targetUser) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -149,7 +151,7 @@ const updateUser = async (req, res) => {
     }
 
     // Solo superadmin puede cambiar roles
-    let updateData = { name, email, cedula: cedula || null, semester: semester || null };
+    let updateData = { firstName, lastName: lastName || '', email, cedula: cedula || null, semester: semester || null };
     if (isSuperAdmin && role) {
       updateData.role = role;
     }

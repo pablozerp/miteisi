@@ -2,9 +2,24 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useSocket } from '@/hooks/useSocket';
+import CodeSnippetBubble from './CodeSnippetBubble';
 import axios from 'axios';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+
+// Lenguajes disponibles para código en chat
+const CHAT_LANGUAGES = [
+  { id: 'javascript', label: 'JavaScript', icon: '🟨' },
+  { id: 'python',     label: 'Python',     icon: '🐍' },
+  { id: 'java',       label: 'Java',       icon: '☕' },
+  { id: 'cpp',        label: 'C++',        icon: '⚡' },
+  { id: 'c',          label: 'C',          icon: '🔧' },
+  { id: 'go',         label: 'Go',         icon: '🐹' },
+  { id: 'typescript', label: 'TypeScript', icon: '💎' },
+  { id: 'rust',       label: 'Rust',       icon: '🦀' },
+  { id: 'php',        label: 'PHP',        icon: '🐘' },
+  { id: 'ruby',       label: 'Ruby',       icon: '💎' },
+];
 
 export default function ChatWindow({ currentUserId, otherUser, onClose }) {
   const { isConnected, sendMessage, subscribeToMessages, unsubscribeFromMessages } = useSocket(currentUserId);
@@ -13,8 +28,15 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState(null);
+
+  // Código en chat
+  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [codeText, setCodeText] = useState('');
+  const [codeLang, setCodeLang] = useState('javascript');
+
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const codeTextareaRef = useRef(null);
 
   // Cargar historial
   useEffect(() => {
@@ -37,7 +59,6 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
   // Escuchar mensajes nuevos
   useEffect(() => {
     const handleNewMessage = (msg) => {
-      // Solo agregar si el mensaje es de o para el otherUser actual
       if (
         (msg.senderId === currentUserId && msg.receiverId === otherUser.id) ||
         (msg.senderId === otherUser.id && msg.receiverId === currentUserId)
@@ -57,9 +78,16 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Focus en textarea de código cuando se abre
+  useEffect(() => {
+    if (showCodeInput && codeTextareaRef.current) {
+      codeTextareaRef.current.focus();
+    }
+  }, [showCodeInput]);
+
   const handleSend = async (e) => {
     e.preventDefault();
-    if ((!inputText.trim() && !selectedImage) || !isConnected || isUploading) return;
+    if ((!inputText.trim() && !selectedImage && !codeText.trim()) || !isConnected || isUploading) return;
     
     setIsUploading(true);
     let imageUrl = null;
@@ -84,10 +112,23 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
       }
     }
 
-    sendMessage(otherUser.id, inputText, imageUrl);
+    // Enviar mensaje con posible código adjunto
+    const codeContent = codeText.trim() || null;
+    const codeLanguage = codeContent ? codeLang : null;
+
+    sendMessage(otherUser.id, inputText, imageUrl, codeContent, codeLanguage);
     setInputText('');
     setSelectedImage(null);
+    setCodeText('');
+    setShowCodeInput(false);
     setIsUploading(false);
+  };
+
+  const handleSendCodeOnly = () => {
+    if (!codeText.trim() || !isConnected) return;
+    sendMessage(otherUser.id, '', null, codeText.trim(), codeLang);
+    setCodeText('');
+    setShowCodeInput(false);
   };
 
   if (!otherUser) return null;
@@ -133,6 +174,16 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
                   />
                 )}
                 {msg.content && <p className="text-sm">{msg.content}</p>}
+                
+                {/* ═══ CODE SNIPPET ═══ */}
+                {msg.codeContent && (
+                  <CodeSnippetBubble 
+                    code={msg.codeContent} 
+                    language={msg.codeLanguage || 'javascript'} 
+                    isMine={isMine}
+                  />
+                )}
+
                 <span className="text-[10px] opacity-60 mt-1 block text-right">
                   {new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
@@ -142,6 +193,63 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
         })}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* ═══ CODE INPUT MODAL ═══ */}
+      {showCodeInput && (
+        <div className="border-t border-white/10 bg-[#0A0F1E] p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+              <span className="text-xs font-bold text-white">Adjuntar Código</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Language selector */}
+              <select
+                value={codeLang}
+                onChange={(e) => setCodeLang(e.target.value)}
+                className="text-[10px] bg-white/5 border border-white/10 rounded-md px-2 py-1 text-slate-300 focus:outline-none focus:border-blue-500/30 appearance-none cursor-pointer"
+              >
+                {CHAT_LANGUAGES.map(l => (
+                  <option key={l.id} value={l.id} className="bg-[#131B2E]">
+                    {l.icon} {l.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => { setShowCodeInput(false); setCodeText(''); }}
+                className="text-slate-400 hover:text-white transition-colors p-1"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <textarea
+            ref={codeTextareaRef}
+            value={codeText}
+            onChange={(e) => setCodeText(e.target.value)}
+            placeholder="Pega o escribe tu código aquí..."
+            className="w-full bg-[#131B2E] border border-white/10 rounded-lg px-3 py-2 text-xs text-emerald-300 placeholder-slate-500 font-mono focus:outline-none focus:border-emerald-500/30 resize-none"
+            rows={5}
+            spellCheck={false}
+          />
+          <div className="flex justify-end mt-2">
+            <button
+              onClick={handleSendCodeOnly}
+              disabled={!codeText.trim() || !isConnected}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:from-emerald-400 hover:to-green-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+              </svg>
+              Enviar Código
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Input */}
       <div className="p-3 border-t border-white/10 bg-black/20 flex flex-col gap-2">
@@ -170,6 +278,7 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
             }}
             className="hidden"
           />
+          {/* Image attach button */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -180,6 +289,20 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
             </svg>
           </button>
+
+          {/* Code attach button */}
+          <button
+            type="button"
+            onClick={() => setShowCodeInput(!showCodeInput)}
+            className={`transition-colors p-2 ${showCodeInput ? 'text-emerald-400' : 'text-slate-400 hover:text-emerald-400'}`}
+            disabled={!isConnected || isUploading}
+            title="Adjuntar código"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </button>
+
           <input
             type="text"
             value={inputText}
@@ -190,7 +313,7 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
           />
           <button
             type="submit"
-            disabled={(!inputText.trim() && !selectedImage) || !isConnected || isUploading}
+            disabled={(!inputText.trim() && !selectedImage && !codeText.trim()) || !isConnected || isUploading}
             className="btn-gradient w-10 h-10 rounded-xl flex items-center justify-center shrink-0 disabled:opacity-50"
           >
             {isUploading ? (

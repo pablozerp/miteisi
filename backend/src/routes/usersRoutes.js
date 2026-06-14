@@ -13,12 +13,20 @@ const prisma = new PrismaClient();
 router.get('/', verifyToken, async (req, res) => {
   try {
     const currentUserId = req.user.userId;
+    const currentUserRole = req.user.role;
+
+    const whereClause = {
+      isActive: true,
+      NOT: { id: currentUserId },
+    };
+
+    // Si el usuario es un estudiante (USER), no debería ver al SUPERADMIN en el chat.
+    if (currentUserRole === 'USER') {
+      whereClause.role = { not: 'SUPERADMIN' };
+    }
 
     const users = await prisma.user.findMany({
-      where: {
-        isActive: true,
-        NOT: { id: currentUserId },
-      },
+      where: whereClause,
       select: {
         id: true,
         firstName: true,
