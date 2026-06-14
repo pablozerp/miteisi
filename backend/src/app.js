@@ -8,6 +8,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const usersRoutes = require('./routes/usersRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const codeRoutes = require('./routes/codeRoutes');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/code', codeRoutes);
 
 // Servir archivos estáticos de uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -65,9 +67,9 @@ io.on('connection', (socket) => {
 
   socket.on('send_message', async (data) => {
     try {
-      const { senderId, receiverId, content, imageUrl } = data;
-      // Guardar en la base de datos
-      const newMessage = await saveMessage(senderId, receiverId, content, imageUrl);
+      const { senderId, receiverId, content, imageUrl, codeContent, codeLanguage } = data;
+      // Guardar en la base de datos (con soporte para código adjunto)
+      const newMessage = await saveMessage(senderId, receiverId, content, imageUrl, codeContent, codeLanguage);
       
       // Emitir al receptor y al emisor
       io.to(receiverId.toString()).emit('receive_message', newMessage);

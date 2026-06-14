@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 import { useEffect, useState } from 'react';
+import CodeSnippetBubble from './CodeSnippetBubble';
 
 const levelColors = {
   'Básico': {
@@ -190,6 +191,7 @@ export default function NodeDetailPanel({ node, onClose }) {
               {data.topics.map((t, i) => {
                 const name = typeof t === 'string' ? t : t.name;
                 const description = typeof t === 'string' ? null : t.description;
+                const codeExample = typeof t === 'string' ? null : t.codeExample;
 
                 return (
                   <div
@@ -199,9 +201,17 @@ export default function NodeDetailPanel({ node, onClose }) {
                   >
                     <h4 className="text-sm font-bold text-blue-300 mb-1">{name}</h4>
                     {description && (
-                      <p className="text-xs text-slate-400 leading-relaxed">
+                      <p className="text-xs text-slate-400 leading-relaxed mb-2">
                         {description}
                       </p>
+                    )}
+                    {codeExample && (
+                      <div className="mt-2" onClick={e => e.stopPropagation()}>
+                        <CodeSnippetBubble 
+                          code={codeExample} 
+                          language={data.lang ? data.lang.toLowerCase() : 'javascript'} 
+                        />
+                      </div>
                     )}
                   </div>
                 );

@@ -15,7 +15,8 @@ export default function AdminUsersPage() {
   
   // Form state
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     cedula: '',
@@ -66,8 +67,8 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleDeleteUser = async (userId, name) => {
-    if (!confirm(`🚨 ¿Estás seguro de que deseas ELIMINAR permanentemente a ${name}? Esta acción borrará todas sus hojas de ruta y no se puede deshacer.`)) return;
+  const handleDeleteUser = async (userId, firstName) => {
+    if (!confirm(`🚨 ¿Estás seguro de que deseas ELIMINAR permanentemente a ${firstName}? Esta acción borrará todas sus hojas de ruta y no se puede deshacer.`)) return;
     
     try {
       await deleteAdminUser(userId);
@@ -79,7 +80,7 @@ export default function AdminUsersPage() {
 
   const openCreateModal = () => {
     setModalMode('CREATE');
-    setFormData({ name: '', email: '', password: '', cedula: '', semester: '', role: 'USER' });
+    setFormData({ firstName: '', lastName: '', email: '', password: '', cedula: '', semester: '', role: 'USER' });
     setFormError('');
     setIsModalOpen(true);
   };
@@ -88,7 +89,8 @@ export default function AdminUsersPage() {
     setModalMode('EDIT');
     setSelectedUser(user.id);
     setFormData({ 
-      name: user.name, 
+      firstName: user.firstName, 
+      lastName: user.lastName,
       email: user.email, 
       password: '', // Solo se usa si backend lo soporta, aquí la dejaremos vacía en update
       cedula: user.cedula || '', 
@@ -166,10 +168,10 @@ export default function AdminUsersPage() {
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500/20 to-indigo-500/20 border border-blue-500/30 flex items-center justify-center font-bold text-blue-400">
-                        {user.name.charAt(0).toUpperCase()}
+                        {user.firstName?.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-bold text-white">{user.name}</p>
+                        <p className="font-bold text-white">{user.firstName} {user.lastName}</p>
                         <p className="text-xs text-slate-400">{user.email}</p>
                       </div>
                     </div>
@@ -232,7 +234,7 @@ export default function AdminUsersPage() {
                     {/* Botón Eliminar */}
                     {user.role !== 'SUPERADMIN' && !(currentUserRole === 'ADMIN' && user.role === 'ADMIN') && (
                       <button 
-                        onClick={() => handleDeleteUser(user.id, user.name)}
+                        onClick={() => handleDeleteUser(user.id, user.firstName)}
                         className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors font-semibold inline-flex items-center gap-1"
                         title="Eliminar"
                       >
@@ -288,13 +290,23 @@ export default function AdminUsersPage() {
             )}
 
             <form onSubmit={handleFormSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold mb-1 text-slate-400">Nombre Completo</label>
-                <input 
-                  type="text" required 
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500/50"
-                  value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-slate-400">Nombre</label>
+                  <input 
+                    type="text" required 
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500/50"
+                    value={formData.firstName} onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold mb-1 text-slate-400">Apellido</label>
+                  <input 
+                    type="text" required 
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white outline-none focus:border-blue-500/50"
+                    value={formData.lastName} onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                  />
+                </div>
               </div>
 
               <div>

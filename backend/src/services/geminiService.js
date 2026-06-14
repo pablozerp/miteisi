@@ -27,6 +27,7 @@ INSTRUCCIONES IMPORTANTES:
 - Para la lista de "topics" (temas), NO uses un arreglo de strings simples. DEBES usar un arreglo de objetos, cada uno con "name" (nombre del tema) y "description". La "description" debe ser extensa y muy didáctica, explicando bien de qué trata ese tema para que la ruta sea robusta y el estudiante pueda comprenderlo por sí solo sin depender únicamente de enlaces.
 - Para cada elemento en "documentation" y "videos", DEBES incluir un campo "summary" detallado y conversacional dirigido al estudiante (máximo 150 caracteres). Ejemplo: "Aquí aprenderás leyendo la documentación oficial donde encontrarás conceptos clave como qué es un API y cómo funcionan los microservicios."
 - Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin bloques de código.
+- ¡CRÍTICO! Asegúrate de poner TODAS las comas (,) requeridas entre las propiedades de los objetos (especialmente antes de "codeExample"). El JSON debe ser 100% estricto y válido.
 
 FORMATO EXACTO DEL JSON:
 [
@@ -38,7 +39,8 @@ FORMATO EXACTO DEL JSON:
     "topics": [
       {
         "name": "Nombre del tema o concepto (ej. Sintaxis)",
-        "description": "Explicación detallada de este tema, qué es, para qué sirve y cómo se aplica..."
+        "description": "Explicación detallada de este tema, qué es, para qué sirve y cómo se aplica...",
+        "codeExample": "Opcional. Una línea de código o bloque corto como ejemplo (como string puro). Si no aplica, dejar vacío o null."
       }
     ],
     "documentation": [
@@ -104,11 +106,18 @@ El campo "dependsOn" indica de qué nodos anteriores depende.
       return null;
     };
 
-    const stripTrailingCommas = (jsonString) => {
-      return jsonString
-        .replace(/,\s*([}\]])/g, '$1')
+    const fixMissingCommas = (jsonString) => {
+      let cleaned = jsonString
+        .replace(/,\s*([}\]])/g, '$1') // Remueve trailing commas
         .replace(/\[\s*,/g, '[')
         .replace(/,\s*\]/g, ']');
+      
+      // Repara comas faltantes entre valores string (ej. "valor" \n "clave")
+      cleaned = cleaned.replace(/"\s*[\n\r]+\s*"/g, '",\n"');
+      // Repara comas faltantes entre objetos (ej. } \n { )
+      cleaned = cleaned.replace(/}\s*[\n\r]+\s*{/g, '},\n{');
+      // Repara comas faltantes entre string y llaves (ej. "valor" \n } ) aunque no debería causar error, por si acaso, no, eso no lleva coma.
+      return cleaned;
     };
 
     let nodes;
@@ -117,7 +126,7 @@ El campo "dependsOn" indica de qué nodos anteriores depende.
       if (!jsonText) {
         throw new Error('No se encontró un array JSON en la respuesta');
       }
-      nodes = JSON.parse(stripTrailingCommas(jsonText));
+      nodes = JSON.parse(fixMissingCommas(jsonText));
     } catch (parseError) {
       console.error('Error parseando JSON de OpenRouter:', parseError.message);
       console.error('Respuesta completa de OpenRouter:', cleanedText);
@@ -159,6 +168,7 @@ const generateComparativeRoadmap = async (langA, langB) => {
 Eres un experto en educación en programación. Genera un análisis comparativo detallado entre "${langA}" y "${langB}" para estudiantes universitarios de Ingeniería en Sistemas (UNERG, Venezuela).
 
 Responde ÚNICAMENTE con un JSON válido sin texto adicional, sin bloques de código markdown.
+¡CRÍTICO! Asegúrate de poner TODAS las comas (,) requeridas entre las propiedades de los objetos (especialmente antes de "codeExample"). El JSON debe ser 100% estricto y válido.
 
 El JSON debe tener exactamente esta estructura:
 {
@@ -197,7 +207,8 @@ El JSON debe tener exactamente esta estructura:
       "topics": [
         {
           "name": "tema1",
-          "description": "Explicación detallada del concepto"
+          "description": "Explicación detallada del concepto",
+          "codeExample": "Opcional. Ejemplo de código en formato string."
         }
       ],
       "position": { "x": 0, "y": 0 },
@@ -213,7 +224,8 @@ El JSON debe tener exactamente esta estructura:
       "topics": [
         {
           "name": "tema1",
-          "description": "Explicación detallada del concepto"
+          "description": "Explicación detallada del concepto",
+          "codeExample": "Opcional. Ejemplo de código en formato string."
         }
       ],
       "position": { "x": 0, "y": 0 },
@@ -248,14 +260,21 @@ Los ids de nodesA deben comenzar con "a-" y los de nodesB con "b-".
       return null;
     };
 
-    const stripTrailingCommas = (s) =>
-      s.replace(/,\s*([}\]])/g, '$1').replace(/\[\s*,/g, '[').replace(/,\s*\]/g, ']');
+    const fixMissingCommas = (s) => {
+      let cleaned = s
+        .replace(/,\s*([}\]])/g, '$1')
+        .replace(/\[\s*,/g, '[')
+        .replace(/,\s*\]/g, ']');
+      cleaned = cleaned.replace(/"\s*[\n\r]+\s*"/g, '",\n"');
+      cleaned = cleaned.replace(/}\s*[\n\r]+\s*{/g, '},\n{');
+      return cleaned;
+    };
 
     let result;
     try {
       const jsonText = extractJsonObject(cleanedText);
       if (!jsonText) throw new Error('No se encontró un objeto JSON en la respuesta comparativa');
-      result = JSON.parse(stripTrailingCommas(jsonText));
+      result = JSON.parse(fixMissingCommas(jsonText));
     } catch (parseError) {
       console.error('Error parseando JSON comparativo:', parseError.message);
       throw new Error('La respuesta de la IA para la comparación no es un JSON válido');

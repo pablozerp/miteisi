@@ -33,13 +33,15 @@ export const useSocket = (userId) => {
     };
   }, [userId]);
 
-  const sendMessage = (receiverId, content, imageUrl = null) => {
+  const sendMessage = (receiverId, content, imageUrl = null, codeContent = null, codeLanguage = null) => {
     if (socketRef.current && isConnected) {
       socketRef.current.emit('send_message', {
         senderId: userId,
         receiverId,
         content,
-        imageUrl
+        imageUrl,
+        codeContent,
+        codeLanguage
       });
     }
   };
