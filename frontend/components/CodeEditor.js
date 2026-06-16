@@ -9,7 +9,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 
 // Templates de código por lenguaje
 const CODE_TEMPLATES = {
-  javascript: `// 🚀 JavaScript — AcademiCode Playground
+  javascript: `//  JavaScript — AcademiCode Playground
 console.log("¡Hola, AcademiCode!");
 
 // Prueba con variables
@@ -17,7 +17,7 @@ const nombre = "Estudiante UNERG";
 const año = new Date().getFullYear();
 console.log(\`Bienvenido \${nombre}, año \${año}\`);
 `,
-  python: `# 🐍 Python — AcademiCode Playground
+  python: `#  Python — AcademiCode Playground
 print("¡Hola, AcademiCode!")
 
 # Prueba con variables
@@ -25,7 +25,7 @@ nombre = "Estudiante UNERG"
 año = 2026
 print(f"Bienvenido {nombre}, año {año}")
 `,
-  java: `// ☕ Java — AcademiCode Playground
+  java: `//  Java — AcademiCode Playground
 public class Main {
     public static void main(String[] args) {
         System.out.println("¡Hola, AcademiCode!");
@@ -36,7 +36,7 @@ public class Main {
     }
 }
 `,
-  cpp: `// ⚡ C++ — AcademiCode Playground
+  cpp: `//  C++ — AcademiCode Playground
 #include <iostream>
 #include <string>
 using namespace std;
@@ -51,7 +51,7 @@ int main() {
     return 0;
 }
 `,
-  go: `// 🐹 Go — AcademiCode Playground
+  go: `//  Go — AcademiCode Playground
 package main
 
 import "fmt"
@@ -64,7 +64,7 @@ func main() {
     fmt.Printf("Bienvenido %s, año %d\\n", nombre, año)
 }
 `,
-  typescript: `// 💎 TypeScript — AcademiCode Playground
+  typescript: `//  TypeScript — AcademiCode Playground
 const greeting: string = "¡Hola, AcademiCode!";
 console.log(greeting);
 
@@ -80,7 +80,7 @@ const student: Student = {
 
 console.log(\`Bienvenido \${student.name}, año \${student.year}\`);
 `,
-  c: `/* 🔧 C — AcademiCode Playground */
+  c: `/*  C — AcademiCode Playground */
 #include <stdio.h>
 
 int main() {
@@ -93,7 +93,7 @@ int main() {
     return 0;
 }
 `,
-  rust: `// 🦀 Rust — AcademiCode Playground
+  rust: `//  Rust — AcademiCode Playground
 fn main() {
     println!("¡Hola, AcademiCode!");
     
@@ -103,7 +103,7 @@ fn main() {
 }
 `,
   php: `<?php
-// 🐘 PHP — AcademiCode Playground
+//  PHP — AcademiCode Playground
 echo "¡Hola, AcademiCode!\\n";
 
 $nombre = "Estudiante UNERG";
@@ -111,7 +111,7 @@ $año = 2026;
 echo "Bienvenido $nombre, año $año\\n";
 ?>
 `,
-  ruby: `# 💎 Ruby — AcademiCode Playground
+  ruby: `#  Ruby — AcademiCode Playground
 puts "¡Hola, AcademiCode!"
 
 nombre = "Estudiante UNERG"
@@ -122,15 +122,15 @@ puts "Bienvenido #{nombre}, año #{año}"
 
 const LANGUAGE_LABELS = {
   javascript: { name: 'JavaScript', icon: '🟨', color: '#F7DF1E' },
-  python:     { name: 'Python',     icon: '🐍', color: '#3776AB' },
-  java:       { name: 'Java',       icon: '☕', color: '#ED8B00' },
-  cpp:        { name: 'C++',        icon: '⚡', color: '#00599C' },
-  c:          { name: 'C',          icon: '🔧', color: '#A8B9CC' },
-  go:         { name: 'Go',         icon: '🐹', color: '#00ADD8' },
-  typescript: { name: 'TypeScript', icon: '💎', color: '#3178C6' },
-  rust:       { name: 'Rust',       icon: '🦀', color: '#DEA584' },
-  php:        { name: 'PHP',        icon: '🐘', color: '#777BB4' },
-  ruby:       { name: 'Ruby',       icon: '💎', color: '#CC342D' },
+  python:     { name: 'Python',     icon: '', color: '#3776AB' },
+  java:       { name: 'Java',       icon: '', color: '#ED8B00' },
+  cpp:        { name: 'C++',        icon: '', color: '#00599C' },
+  c:          { name: 'C',          icon: '', color: '#A8B9CC' },
+  go:         { name: 'Go',         icon: '', color: '#00ADD8' },
+  typescript: { name: 'TypeScript', icon: '', color: '#3178C6' },
+  rust:       { name: 'Rust',       icon: '', color: '#DEA584' },
+  php:        { name: 'PHP',        icon: '', color: '#777BB4' },
+  ruby:       { name: 'Ruby',       icon: '', color: '#CC342D' },
 };
 
 // Mapeo de lenguajes a modos de Monaco

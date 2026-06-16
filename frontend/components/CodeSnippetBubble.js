@@ -88,11 +88,11 @@ export default function CodeSnippetBubble({ code, language, isMine = false, isCo
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Open in Playground */}
+          {/* Open in Editor */}
           <button
             onClick={handleOpenInPlayground}
-            className="p-1 rounded-md hover:bg-white/10 transition-colors group"
-            title="Abrir en Playground"
+            className="p-1.5 bg-white/5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-400 rounded transition-colors group relative"
+            title="Abrir en Editor de Código"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

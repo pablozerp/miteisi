@@ -10,15 +10,15 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 // Lenguajes disponibles para código en chat
 const CHAT_LANGUAGES = [
   { id: 'javascript', label: 'JavaScript', icon: '🟨' },
-  { id: 'python',     label: 'Python',     icon: '🐍' },
-  { id: 'java',       label: 'Java',       icon: '☕' },
-  { id: 'cpp',        label: 'C++',        icon: '⚡' },
-  { id: 'c',          label: 'C',          icon: '🔧' },
-  { id: 'go',         label: 'Go',         icon: '🐹' },
-  { id: 'typescript', label: 'TypeScript', icon: '💎' },
-  { id: 'rust',       label: 'Rust',       icon: '🦀' },
-  { id: 'php',        label: 'PHP',        icon: '🐘' },
-  { id: 'ruby',       label: 'Ruby',       icon: '💎' },
+  { id: 'python',     label: 'Python',     icon: '' },
+  { id: 'java',       label: 'Java',       icon: '' },
+  { id: 'cpp',        label: 'C++',        icon: '' },
+  { id: 'c',          label: 'C',          icon: '' },
+  { id: 'go',         label: 'Go',         icon: '' },
+  { id: 'typescript', label: 'TypeScript', icon: '' },
+  { id: 'rust',       label: 'Rust',       icon: '' },
+  { id: 'php',        label: 'PHP',        icon: '' },
+  { id: 'ruby',       label: 'Ruby',       icon: '' },
 ];
 
 export default function ChatWindow({ currentUserId, otherUser, onClose }) {

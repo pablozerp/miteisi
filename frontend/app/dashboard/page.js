@@ -112,7 +112,7 @@ export default function DashboardPage() {
             {/* Card 1 */}
             <div className="glass-card glass-card-hover p-6 flex items-center gap-5">
               <div className="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl shadow-[0_0_15px_-3px_rgba(59,130,246,0.3)]">
-                🗺️
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
               </div>
               <div>
                 <p className="text-4xl font-extrabold text-white">{recentRoadmaps.length}</p>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
             {/* Card 2 */}
             <div className="glass-card glass-card-hover p-6 flex items-center gap-5">
               <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-2xl shadow-[0_0_15px_-3px_rgba(249,115,22,0.3)]">
-                🎯
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
               </div>
               <div>
                 <p className="text-4xl font-extrabold text-white">
@@ -136,7 +136,7 @@ export default function DashboardPage() {
             {/* Card 3 */}
             <div className="glass-card glass-card-hover p-6 flex items-center gap-5">
               <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-2xl shadow-[0_0_15px_-3px_rgba(99,102,241,0.3)]">
-                🚀
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>
               </div>
               <div>
                 <p className="text-4xl font-extrabold text-white">
@@ -212,7 +212,7 @@ export default function DashboardPage() {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-0.5">
                   <div className="w-full h-full bg-[#0b1326] rounded-[10px] flex items-center justify-center">
-                    <span className="text-2xl">🗺️</span>
+                    <span className="text-2xl">️</span>
                   </div>
                 </div>
                 <div>
@@ -256,7 +256,7 @@ export default function DashboardPage() {
             <div className="relative inline-flex items-center justify-center w-32 h-32 mb-6">
               <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
               <div className="relative bg-gradient-to-br from-[#171f33] to-[#0b1326] w-24 h-24 rounded-full border border-white/10 flex items-center justify-center shadow-2xl">
-                <span className="text-5xl">🚀</span>
+                <span className="text-5xl"></span>
               </div>
             </div>
             <h3 className="text-2xl font-bold text-white mb-2">Comienza tu viaje de aprendizaje</h3>
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                       <h4 className={`font-extrabold text-lg mb-4 ${i === 0 ? 'text-blue-400' : 'text-orange-400'}`}>{lang}</h4>
                       {comparison.comparison.strengths?.[lang] && (
                         <div className="mb-4">
-                          <p className="text-xs font-bold text-green-400 uppercase tracking-wider mb-2">✅ Fortalezas</p>
+                          <p className="text-xs font-bold text-green-400 uppercase tracking-wider mb-2"> Fortalezas</p>
                           <ul className="space-y-1">
                             {comparison.comparison.strengths[lang].map((s, j) => (
                               <li key={j} className="text-sm text-slate-300 flex gap-2"><span className="text-green-500 mt-0.5">•</span>{s}</li>
@@ -328,7 +328,7 @@ export default function DashboardPage() {
                       )}
                       {comparison.comparison.weaknesses?.[lang] && (
                         <div className="mb-4">
-                          <p className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">⚠️ Debilidades</p>
+                          <p className="text-xs font-bold text-red-400 uppercase tracking-wider mb-2">️ Debilidades</p>
                           <ul className="space-y-1">
                             {comparison.comparison.weaknesses[lang].map((w, j) => (
                               <li key={j} className="text-sm text-slate-300 flex gap-2"><span className="text-red-500 mt-0.5">•</span>{w}</li>
@@ -338,7 +338,7 @@ export default function DashboardPage() {
                       )}
                       {comparison.comparison.useCases?.[lang] && (
                         <div>
-                          <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">🎯 Casos de Uso</p>
+                          <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2"> Casos de Uso</p>
                           <ul className="space-y-1">
                             {comparison.comparison.useCases[lang].map((u, j) => (
                               <li key={j} className="text-sm text-slate-300 flex gap-2"><span className="text-indigo-400 mt-0.5">•</span>{u}</li>
@@ -354,63 +354,43 @@ export default function DashboardPage() {
                 {comparison.comparison.verdict && (
                   <div className="glass-card p-6 border border-amber-500/20 bg-amber-500/5">
                     <h3 className="text-sm font-bold text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                      <span>⚖️</span> Veredicto Final
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg> Veredicto Final
                     </h3>
                     <p className="text-slate-200 leading-relaxed">{comparison.comparison.verdict}</p>
                   </div>
                 )}
-                {/* Comparative Canvases */}
-                {(comparison.nodesA?.length > 0 || comparison.nodesB?.length > 0) && (
-                  <div className="mt-6 space-y-6">
-                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                      <span>🗺️</span> Hojas de Ruta Comparativas
+                {/* Códigos de Ejemplo Comparativos */}
+                {comparison.codeExamples?.length > 0 && (
+                  <div className="mt-6 space-y-5">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg> Ejemplos de Código Comparativos
                     </h3>
-
-                    {/* Canvas A */}
-                    {comparison.nodesA?.length > 0 && (
-                      <div>
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-xs font-black text-white">A</span>
-                          <h4 className="text-lg font-extrabold text-blue-400">{comparison.langA}</h4>
+                    {comparison.codeExamples.map((ex, idx) => (
+                      <div key={idx} className="glass-card p-6">
+                        <div className="mb-3">
+                          <h4 className="text-base font-bold text-white mb-1">{ex.concept}</h4>
+                          <p className="text-sm text-slate-400">{ex.description}</p>
                         </div>
-                        <div className="relative w-full overflow-hidden rounded-2xl flex">
-                          <div className={`flex-1 transition-all duration-500 ${selectedNode?.id?.startsWith('a-') ? 'sm:mr-[400px]' : ''}`}>
-                            <RoadmapCanvas
-                              roadmapNodes={comparison.nodesA}
-                              selectedNodeId={selectedNode?.id}
-                              onNodeSelect={(nodeData) => setSelectedNode(nodeData)}
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                          {/* Código A */}
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-black text-white">A</span>
+                              <span className="text-sm font-bold text-blue-400">{comparison.langA}</span>
+                            </div>
+                            <pre className="flex-1 bg-[#0b1121] border border-blue-500/20 rounded-xl p-4 text-xs text-slate-200 overflow-x-auto leading-relaxed whitespace-pre-wrap" style={{fontFamily: 'Consolas, Monaco, monospace'}}>{ex.codeA?.replace(/\\n/g, '\n')}</pre>
                           </div>
-                          <NodeDetailPanel
-                            node={selectedNode?.id?.startsWith('a-') ? selectedNode : null}
-                            onClose={() => setSelectedNode(null)}
-                          />
+                          {/* Código B */}
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center text-[10px] font-black text-white">B</span>
+                              <span className="text-sm font-bold text-orange-400">{comparison.langB}</span>
+                            </div>
+                            <pre className="flex-1 bg-[#0b1121] border border-orange-500/20 rounded-xl p-4 text-xs text-slate-200 overflow-x-auto leading-relaxed whitespace-pre-wrap" style={{fontFamily: 'Consolas, Monaco, monospace'}}>{ex.codeB?.replace(/\\n/g, '\n')}</pre>
+                          </div>
                         </div>
                       </div>
-                    )}
-
-                    {/* Canvas B */}
-                    {comparison.nodesB?.length > 0 && (
-                      <div>
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-xs font-black text-white">B</span>
-                          <h4 className="text-lg font-extrabold text-orange-400">{comparison.langB}</h4>
-                        </div>
-                        <div className="relative w-full overflow-hidden rounded-2xl flex">
-                          <div className={`flex-1 transition-all duration-500 ${selectedNode?.id?.startsWith('b-') ? 'sm:mr-[400px]' : ''}`}>
-                            <RoadmapCanvas
-                              roadmapNodes={comparison.nodesB}
-                              selectedNodeId={selectedNode?.id}
-                              onNodeSelect={(nodeData) => setSelectedNode(nodeData)}
-                            />
-                          </div>
-                          <NodeDetailPanel
-                            node={selectedNode?.id?.startsWith('b-') ? selectedNode : null}
-                            onClose={() => setSelectedNode(null)}
-                          />
-                        </div>
-                      </div>
-                    )}
+                    ))}
                   </div>
                 )}
               </div>
