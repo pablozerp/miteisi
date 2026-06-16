@@ -49,6 +49,7 @@ export default function AdminUsersPage() {
 
   const loadUsers = async () => {
     try {
+      console.log('Loading users...');
       const data = await getAdminUsers();
       setUsers(data.users);
     } catch (err) {

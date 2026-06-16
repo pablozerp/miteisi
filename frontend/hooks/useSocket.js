@@ -33,7 +33,7 @@ export const useSocket = (userId) => {
     };
   }, [userId]);
 
-  const sendMessage = (receiverId, content, imageUrl = null, codeContent = null, codeLanguage = null) => {
+  const sendMessage = (receiverId, content, imageUrl = null, codeContent = null, codeLanguage = null, isCorrection = false, originalCodeContent = null) => {
     if (socketRef.current && isConnected) {
       socketRef.current.emit('send_message', {
         senderId: userId,
@@ -41,7 +41,9 @@ export const useSocket = (userId) => {
         content,
         imageUrl,
         codeContent,
-        codeLanguage
+        codeLanguage,
+        isCorrection,
+        originalCodeContent
       });
     }
   };

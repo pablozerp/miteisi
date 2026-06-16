@@ -83,9 +83,14 @@ export default function NodeDetailPanel({ node, onClose }) {
   if (!data) return null;
 
   const style = levelColors[data.level] || levelColors['Básico'];
-  const hasDocs = data.documentation?.length > 0;
-  const hasVideos = data.videos?.length > 0;
-  const hasTopics = data.topics?.length > 0;
+  
+  const topics = Array.isArray(data.topics) ? data.topics : (data.topics ? [data.topics] : []);
+  const docs = Array.isArray(data.documentation) ? data.documentation : (data.documentation ? [data.documentation] : []);
+  const videos = Array.isArray(data.videos) ? data.videos : (data.videos ? [data.videos] : []);
+
+  const hasTopics = topics.length > 0;
+  const hasDocs = docs.length > 0;
+  const hasVideos = videos.length > 0;
 
   return (
     <div
@@ -134,19 +139,19 @@ export default function NodeDetailPanel({ node, onClose }) {
           {hasTopics && (
             <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
               <span>📚</span>
-              <span className="font-semibold">{data.topics.length} temas</span>
+              <span className="font-semibold">{topics.length} temas</span>
             </div>
           )}
           {hasDocs && (
             <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
               <span>📄</span>
-              <span className="font-semibold">{data.documentation.length} docs</span>
+              <span className="font-semibold">{docs.length} docs</span>
             </div>
           )}
           {hasVideos && (
             <div className="flex items-center gap-1.5 text-xs text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">
               <span>🎬</span>
-              <span className="font-semibold">{data.videos.length} videos</span>
+              <span className="font-semibold">{videos.length} videos</span>
             </div>
           )}
         </div>
@@ -188,7 +193,7 @@ export default function NodeDetailPanel({ node, onClose }) {
           <div className="space-y-4">
             <p className="text-xs text-slate-500 mb-3">Conceptos que aprenderás en esta etapa:</p>
             <div className="space-y-3">
-              {data.topics.map((t, i) => {
+              {topics.map((t, i) => {
                 const name = typeof t === 'string' ? t : t.name;
                 const description = typeof t === 'string' ? null : t.description;
                 const codeExample = typeof t === 'string' ? null : t.codeExample;
@@ -223,7 +228,7 @@ export default function NodeDetailPanel({ node, onClose }) {
         {/* DOCS tab */}
         {activeTab === 'docs' && hasDocs && (
           <div className="space-y-3">
-            {data.documentation.map((doc, i) => {
+            {docs.map((doc, i) => {
               const isDirectLink = doc.url?.startsWith('http') && !doc.url.includes('google.com/search');
               const href = isDirectLink ? doc.url : `https://www.google.com/search?btnI=1&q=${encodeURIComponent(doc.url)}`;
               const domain = (() => {
@@ -255,7 +260,7 @@ export default function NodeDetailPanel({ node, onClose }) {
         {/* VIDEOS tab */}
         {activeTab === 'videos' && hasVideos && (
           <div className="space-y-4">
-            {data.videos.map((v, i) => {
+            {videos.map((v, i) => {
               const ytId = getYouTubeId(v.url);
               return (
                 <a

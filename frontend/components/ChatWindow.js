@@ -23,6 +23,7 @@ const CHAT_LANGUAGES = [
 
 export default function ChatWindow({ currentUserId, otherUser, onClose }) {
   const { isConnected, sendMessage, subscribeToMessages, unsubscribeFromMessages } = useSocket(currentUserId);
+  const [currentUserRole, setCurrentUserRole] = useState('USER');
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
@@ -33,6 +34,8 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
   const [showCodeInput, setShowCodeInput] = useState(false);
   const [codeText, setCodeText] = useState('');
   const [codeLang, setCodeLang] = useState('javascript');
+  const [correctingState, setCorrectingState] = useState({ active: false, originalCode: '', language: '' });
+  const [isMaximized, setIsMaximized] = useState(false);
 
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -41,6 +44,15 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
   // Cargar historial
   useEffect(() => {
     if (!currentUserId || !otherUser?.id) return;
+    
+    // Obtener el rol del usuario actual desde el token
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setCurrentUserRole(payload.role);
+      } catch (e) {}
+    }
     
     const fetchHistory = async () => {
       try {
@@ -126,15 +138,26 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
 
   const handleSendCodeOnly = () => {
     if (!codeText.trim() || !isConnected) return;
-    sendMessage(otherUser.id, '', null, codeText.trim(), codeLang);
+    sendMessage(otherUser.id, '', null, codeText.trim(), codeLang, correctingState.active, correctingState.originalCode);
     setCodeText('');
     setShowCodeInput(false);
+    setCorrectingState({ active: false, originalCode: '', language: '' });
+  };
+
+  const handleCorrectCode = (code, lang) => {
+    setCorrectingState({ active: true, originalCode: code, language: lang });
+    setCodeText(code);
+    setCodeLang(lang);
+    setShowCodeInput(true);
   };
 
   if (!otherUser) return null;
 
   return (
-    <div className="fixed bottom-0 right-4 w-80 md:w-96 glass-card rounded-t-2xl shadow-2xl z-50 flex flex-col border border-white/10" style={{ height: '500px', maxHeight: '80vh' }}>
+    <div 
+      className={`fixed ${isMaximized ? 'inset-4 md:inset-10 z-[100] rounded-2xl' : 'bottom-0 right-4 w-80 md:w-96 rounded-t-2xl z-50'} glass-card shadow-2xl flex flex-col border border-white/10 transition-all duration-300`} 
+      style={{ height: isMaximized ? 'auto' : '500px', maxHeight: isMaximized ? '100%' : '80vh' }}
+    >
       {/* Header */}
       <div className="p-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-blue-600/20 to-indigo-600/20 rounded-t-2xl">
         <div className="flex items-center gap-3">
@@ -149,11 +172,24 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
             <p className="text-xs text-slate-400">{otherUser.role === 'SUPERADMIN' ? 'Super Administrador' : (otherUser.role === 'ADMIN' ? 'Docente' : 'Estudiante')}</p>
           </div>
         </div>
-        <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={() => setIsMaximized(!isMaximized)} className="text-slate-400 hover:text-white transition-colors p-1" title={isMaximized ? "Minimizar" : "Maximizar"}>
+            {isMaximized ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 3v3h-3m3 -3l-4 4m13 -4v3h3m-3 -3l4 4m-13 13v-3h-3m3 3l-4 -4m13 4v-3h3m-3 3l4 -4" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            )}
+          </button>
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors p-1">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Messages */}
@@ -161,8 +197,8 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
         {messages.map((msg, i) => {
           const isMine = msg.senderId === currentUserId;
           return (
-            <div key={msg.id || i} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${isMine ? 'bg-blue-600 text-white rounded-br-sm' : 'bg-white/10 text-slate-200 rounded-bl-sm border border-white/5'}`}>
+            <div key={msg.id || i} className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-2`}>
+              <div className={`${msg.codeContent ? 'w-[98%] max-w-[98%]' : 'max-w-[80%]'} rounded-2xl px-4 py-3 shadow-lg ${isMine ? 'bg-blue-600/90 text-white rounded-br-sm' : 'bg-[#131B2E]/90 text-slate-200 rounded-bl-sm border border-white/10'}`}>
                 {msg.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img 
@@ -181,6 +217,10 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
                     code={msg.codeContent} 
                     language={msg.codeLanguage || 'javascript'} 
                     isMine={isMine}
+                    isCorrection={msg.isCorrection}
+                    originalCode={msg.originalCodeContent}
+                    onCorrect={(currentUserRole === 'ADMIN' || currentUserRole === 'SUPERADMIN') ? handleCorrectCode : null}
+                    isMaximized={isMaximized}
                   />
                 )}
 
@@ -202,7 +242,9 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
-              <span className="text-xs font-bold text-white">Adjuntar Código</span>
+              <span className="text-xs font-bold text-white">
+                {correctingState.active ? 'Corrigiendo Código' : 'Adjuntar Código'}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               {/* Language selector */}
@@ -218,7 +260,7 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
                 ))}
               </select>
               <button
-                onClick={() => { setShowCodeInput(false); setCodeText(''); }}
+                onClick={() => { setShowCodeInput(false); setCodeText(''); setCorrectingState({ active: false, originalCode: '', language: '' }); }}
                 className="text-slate-400 hover:text-white transition-colors p-1"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -232,20 +274,24 @@ export default function ChatWindow({ currentUserId, otherUser, onClose }) {
             value={codeText}
             onChange={(e) => setCodeText(e.target.value)}
             placeholder="Pega o escribe tu código aquí..."
-            className="w-full bg-[#131B2E] border border-white/10 rounded-lg px-3 py-2 text-xs text-emerald-300 placeholder-slate-500 font-mono focus:outline-none focus:border-emerald-500/30 resize-none"
-            rows={5}
+            className="w-full bg-[#131B2E] border border-white/10 rounded-lg px-3 py-2 text-sm text-emerald-300 placeholder-slate-500 font-mono focus:outline-none focus:border-emerald-500/30 resize-none shadow-inner"
+            rows={isMaximized ? 12 : 8}
             spellCheck={false}
           />
           <div className="flex justify-end mt-2">
             <button
               onClick={handleSendCodeOnly}
               disabled={!codeText.trim() || !isConnected}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-500 to-green-600 text-white shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:from-emerald-400 hover:to-green-500"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-white shadow-lg disabled:opacity-40 disabled:cursor-not-allowed transition-all ${
+                correctingState.active 
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500' 
+                  : 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500'
+              }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
               </svg>
-              Enviar Código
+              {correctingState.active ? 'Enviar Corrección' : 'Enviar Código'}
             </button>
           </div>
         </div>

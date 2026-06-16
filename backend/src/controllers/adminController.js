@@ -182,6 +182,16 @@ const deleteUser = async (req, res) => {
        return res.status(403).json({ error: 'No se puede eliminar a un Súper Administrador' });
     }
 
+    // Eliminar los mensajes asociados al usuario para no violar la llave foránea
+    await prisma.message.deleteMany({
+      where: {
+        OR: [
+          { senderId: Number(id) },
+          { receiverId: Number(id) }
+        ]
+      }
+    });
+
     await prisma.user.delete({ where: { id: Number(id) } });
     res.json({ message: 'Usuario eliminado exitosamente' });
   } catch (error) {
