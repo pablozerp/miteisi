@@ -54,6 +54,8 @@ model Message {
   imageUrl     String?
   codeContent  String?   // Código fuente adjunto en el chat
   codeLanguage String?   // Lenguaje del código (ej: "javascript", "python")
+  isCorrection Boolean   @default(false) // Indica si este mensaje es una corrección
+  originalCodeContent String? // Código original antes de la corrección
   senderId     Int
   sender       User     @relation("SentMessages", fields: [senderId], references: [id])
   receiverId   Int

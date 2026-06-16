@@ -5,6 +5,10 @@ const { enrichRoadmapLinks } = require('./linkService');
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY,
+  defaultHeaders: {
+    "HTTP-Referer": "http://localhost:3000",
+    "X-Title": "AcademiCode",
+  }
 });
 
 /**
@@ -27,7 +31,10 @@ INSTRUCCIONES IMPORTANTES:
 - Para la lista de "topics" (temas), NO uses un arreglo de strings simples. DEBES usar un arreglo de objetos, cada uno con "name" (nombre del tema) y "description". La "description" debe ser extensa y muy didáctica, explicando bien de qué trata ese tema para que la ruta sea robusta y el estudiante pueda comprenderlo por sí solo sin depender únicamente de enlaces.
 - Para cada elemento en "documentation" y "videos", DEBES incluir un campo "summary" detallado y conversacional dirigido al estudiante (máximo 150 caracteres). Ejemplo: "Aquí aprenderás leyendo la documentación oficial donde encontrarás conceptos clave como qué es un API y cómo funcionan los microservicios."
 - Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin bloques de código.
-- ¡CRÍTICO! Asegúrate de poner TODAS las comas (,) requeridas entre las propiedades de los objetos (especialmente antes de "codeExample"). El JSON debe ser 100% estricto y válido.
+- ¡CRÍTICO! Asegúrate de poner TODAS las comas (,) requeridas entre las propiedades de los objetos (especialmente antes de "codeExample").
+- ¡CRÍTICO! NUNCA uses comillas dobles (") dentro de un valor de texto en la descripción o resumen. Si necesitas entrecomillar, usa siempre comillas simples ('). El uso de comillas dobles no escapadas corrompe el JSON.
+- ¡CRÍTICO! NUNCA uses saltos de línea reales (Enter/Return) dentro de los valores de texto. Todo el texto de una propiedad debe estar en una sola línea física. Si necesitas un salto de línea en "codeExample", escribe explícitamente los caracteres \\n.
+- ¡CRÍTICO! Asegúrate de CERRAR todas las comillas. Revisa cuidadosamente que cada valor termine con su respectiva comilla doble ("). El JSON debe ser 100% estricto y válido.
 
 FORMATO EXACTO DEL JSON:
 [
@@ -78,10 +85,13 @@ El campo "dependsOn" indica de qué nodos anteriores depende.
           role: "user",
           content: prompt
         }
-      ]
+      ],
+      max_tokens: 4000,
+      temperature: 0.3
     });
 
-    const text = completion.choices[0].message.content;
+    const text = completion.choices[0].message?.content || '';
+    if (!text) throw new Error('La IA devolvió una respuesta vacía.');
 
     const cleanedText = text
       .replace(/```json/g, '')
@@ -90,20 +100,9 @@ El campo "dependsOn" indica de qué nodos anteriores depende.
 
     const extractJsonArray = (input) => {
       const start = input.indexOf('[');
-      if (start === -1) return null;
-
-      let depth = 0;
-      for (let i = start; i < input.length; i += 1) {
-        const char = input[i];
-        if (char === '[') depth += 1;
-        if (char === ']') depth -= 1;
-
-        if (depth === 0) {
-          return input.slice(start, i + 1);
-        }
-      }
-
-      return null;
+      const end = input.lastIndexOf(']');
+      if (start === -1 || end === -1 || end < start) return null;
+      return input.slice(start, end + 1);
     };
 
     const fixMissingCommas = (jsonString) => {
@@ -168,7 +167,10 @@ const generateComparativeRoadmap = async (langA, langB) => {
 Eres un experto en educación en programación. Genera un análisis comparativo detallado entre "${langA}" y "${langB}" para estudiantes universitarios de Ingeniería en Sistemas (UNERG, Venezuela).
 
 Responde ÚNICAMENTE con un JSON válido sin texto adicional, sin bloques de código markdown.
-¡CRÍTICO! Asegúrate de poner TODAS las comas (,) requeridas entre las propiedades de los objetos (especialmente antes de "codeExample"). El JSON debe ser 100% estricto y válido.
+¡CRÍTICO! Asegúrate de poner TODAS las comas (,) requeridas entre las propiedades de los objetos (especialmente antes de "codeExample").
+¡CRÍTICO! NUNCA uses comillas dobles (") dentro de los valores de texto (como descripciones, resúmenes, etc). Si necesitas entrecomillar, usa SIEMPRE comillas simples (').
+¡CRÍTICO! NUNCA uses saltos de línea reales (Enter/Return) dentro de los valores de texto. Todo el texto debe estar en una sola línea física.
+¡CRÍTICO! Asegúrate de CERRAR todas las comillas dobles al final de cada valor. El JSON debe ser 100% estricto y válido.
 
 El JSON debe tener exactamente esta estructura:
 {
@@ -241,23 +243,22 @@ Los ids de nodesA deben comenzar con "a-" y los de nodesB con "b-".
   try {
     const completion = await openai.chat.completions.create({
       model: "openrouter/free",
-      messages: [{ role: "user", content: prompt }]
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 4000,
+      temperature: 0.3
     });
 
-    const text = completion.choices[0].message.content;
+    const text = completion.choices[0].message?.content || '';
+    if (!text) throw new Error('La IA devolvió una respuesta vacía.');
+
     const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
     // Extraer el objeto JSON raíz
     const extractJsonObject = (input) => {
       const start = input.indexOf('{');
-      if (start === -1) return null;
-      let depth = 0;
-      for (let i = start; i < input.length; i++) {
-        if (input[i] === '{') depth++;
-        if (input[i] === '}') depth--;
-        if (depth === 0) return input.slice(start, i + 1);
-      }
-      return null;
+      const end = input.lastIndexOf('}');
+      if (start === -1 || end === -1 || end < start) return null;
+      return input.slice(start, end + 1);
     };
 
     const fixMissingCommas = (s) => {

@@ -67,9 +67,9 @@ io.on('connection', (socket) => {
 
   socket.on('send_message', async (data) => {
     try {
-      const { senderId, receiverId, content, imageUrl, codeContent, codeLanguage } = data;
-      // Guardar en la base de datos (con soporte para código adjunto)
-      const newMessage = await saveMessage(senderId, receiverId, content, imageUrl, codeContent, codeLanguage);
+      const { senderId, receiverId, content, imageUrl, codeContent, codeLanguage, isCorrection, originalCodeContent } = data;
+      // Guardar en la base de datos (con soporte para código adjunto y correcciones)
+      const newMessage = await saveMessage(senderId, receiverId, content, imageUrl, codeContent, codeLanguage, isCorrection, originalCodeContent);
       
       // Emitir al receptor y al emisor
       io.to(receiverId.toString()).emit('receive_message', newMessage);
