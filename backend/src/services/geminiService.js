@@ -25,19 +25,23 @@ Eres un experto en educación en programación. Genera una hoja de ruta de apren
 La hoja de ruta debe estar orientada a estudiantes universitarios de Ingeniería en Sistemas en Venezuela (UNERG).
 
 INSTRUCCIONES IMPORTANTES:
-- Genera entre 6 y 9 nodos (pasos de aprendizaje) lógicos (de básico a avanzado).
+- Genera EXACTAMENTE 5 nodos (pasos de aprendizaje) lógicos (de básico a avanzado).
 - Incluye links de YouTube de videos educativos REALES y en español cuando sea posible.
 - Para "documentation", el campo "url" DEBE ser una URL HTTPS real y directa a la documentación oficial o al mejor recurso disponible (ej: "https://docs.python.org/3/tutorial/controlflow.html"). Si no sabes la URL exacta, pon la URL base de la documentación. NO uses frases de búsqueda.
-- Para la lista de "topics" (temas), NO uses un arreglo de strings simples. DEBES usar un arreglo de objetos, cada uno con "name" (nombre del tema) y "description". La "description" debe ser extensa y muy didáctica, explicando bien de qué trata ese tema para que la ruta sea robusta y el estudiante pueda comprenderlo por sí solo sin depender únicamente de enlaces.
-- Para cada elemento en "documentation" y "videos", DEBES incluir un campo "summary" detallado y conversacional dirigido al estudiante (máximo 150 caracteres). Ejemplo: "Aquí aprenderás leyendo la documentación oficial donde encontrarás conceptos clave como qué es un API y cómo funcionan los microservicios."
+- Para la lista de "topics" (temas), DEBES usar un arreglo de objetos, cada uno con "name", "description" y "codeExample".
+- La "description" DEBE ser EXTREMADAMENTE EXTENSA, didáctica y profunda, explicando abundantemente de qué trata ese tema para que el estudiante aprenda solo.
+- ¡CRÍTICO! TODOS LOS TEMAS (topics) DEBEN INCLUIR UN "codeExample" OBLIGATORIAMENTE. No lo dejes vacío. Muestra siempre un bloque de código real.
+- ¡CRÍTICO! DEBES incluir SIEMPRE el arreglo "documentation" con al menos 2 enlaces reales. NUNCA lo omitas ni lo dejes vacío.
+- Para cada elemento en "documentation" y "videos", DEBES incluir un campo "summary" detallado y conversacional dirigido al estudiante (máximo 150 caracteres).
 - Responde ÚNICAMENTE con un JSON válido, sin texto adicional, sin bloques de código.
 - ¡CRÍTICO! Asegúrate de poner TODAS las comas (,) requeridas entre las propiedades de los objetos (especialmente antes de "codeExample").
-- ¡CRÍTICO! NUNCA uses comillas dobles (") dentro de un valor de texto en la descripción o resumen. Si necesitas entrecomillar, usa siempre comillas simples ('). El uso de comillas dobles no escapadas corrompe el JSON.
-- ¡CRÍTICO! NUNCA uses saltos de línea reales (Enter/Return) dentro de los valores de texto. Todo el texto de una propiedad debe estar en una sola línea física. Si necesitas un salto de línea en "codeExample", escribe explícitamente los caracteres \\n.
-- ¡CRÍTICO! Asegúrate de CERRAR todas las comillas. Revisa cuidadosamente que cada valor termine con su respectiva comilla doble ("). El JSON debe ser 100% estricto y válido.
+- ¡CRÍTICO! NUNCA uses comillas dobles (") dentro de un valor de texto. Usa siempre comillas simples (').
+- ¡CRÍTICO! NUNCA uses saltos de línea reales (Enter/Return) dentro de los valores de texto. Usa explícitamente \\n en "codeExample".
+- ¡CRÍTICO! Asegúrate de CERRAR todas las comillas. El JSON debe ser 100% estricto y válido.
 
 FORMATO EXACTO DEL JSON:
-[
+{
+  "roadmap": [
   {
     "id": "node-1",
     "title": "Nombre del tema",
@@ -46,110 +50,100 @@ FORMATO EXACTO DEL JSON:
     "topics": [
       {
         "name": "Nombre del tema o concepto (ej. Sintaxis)",
-        "description": "Explicación detallada de este tema, qué es, para qué sirve y cómo se aplica...",
-        "codeExample": "Opcional. Una línea de código o bloque corto como ejemplo (como string puro). Si no aplica, dejar vacío o null."
+        "description": "Explicación muy detallada y extensa de este tema...",
+        "codeExample": "Un bloque de código demostrativo. Usa \\n para saltos de línea."
       }
     ],
     "documentation": [
       {
         "title": "Nombre del recurso",
-        "url": "https://...",
+        "url": "https://ejemplo.com/docs",
         "summary": "Breve descripción de lo que ofrece esta documentación."
       }
     ],
     "videos": [
       {
         "title": "Título del video",
-        "url": "https://www.youtube.com/watch?v=...",
+        "url": "https://www.youtube.com/watch?v=ejemplo",
         "summary": "Breve descripción de lo que enseña este video."
       }
     ],
     "position": { "x": 0, "y": 0 },
     "dependsOn": []
-  },
-  {
-    "id": "node-2",
-    "title": "...",
-    "dependsOn": ["node-1"]
   }
-]
+  ]
+}
 
 El campo "dependsOn" indica de qué nodos anteriores depende.
 `;
 
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "openrouter/free",
-      messages: [
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 4000,
-      temperature: 0.3
-    });
+  let attempt = 0;
+  const maxAttempts = 3;
 
-    const text = completion.choices[0].message?.content || '';
-    if (!text) throw new Error('La IA devolvió una respuesta vacía.');
-
-    const cleanedText = text
-      .replace(/```json/g, '')
-      .replace(/```/g, '')
-      .trim();
-
-    const extractJsonArray = (input) => {
-      const start = input.indexOf('[');
-      const end = input.lastIndexOf(']');
-      if (start === -1 || end === -1 || end < start) return null;
-      return input.slice(start, end + 1);
-    };
-
-    const fixMissingCommas = (jsonString) => {
-      let cleaned = jsonString
-        .replace(/,\s*([}\]])/g, '$1') // Remueve trailing commas
-        .replace(/\[\s*,/g, '[')
-        .replace(/,\s*\]/g, ']');
-      
-      // Repara comas faltantes entre valores string (ej. "valor" \n "clave")
-      cleaned = cleaned.replace(/"\s*[\n\r]+\s*"/g, '",\n"');
-      // Repara comas faltantes entre objetos (ej. } \n { )
-      cleaned = cleaned.replace(/}\s*[\n\r]+\s*{/g, '},\n{');
-      // Repara comas faltantes entre string y llaves (ej. "valor" \n } ) aunque no debería causar error, por si acaso, no, eso no lleva coma.
-      return cleaned;
-    };
-
-    let nodes;
+  while (attempt < maxAttempts) {
     try {
-      const jsonText = extractJsonArray(cleanedText);
-      if (!jsonText) {
-        throw new Error('No se encontró un array JSON en la respuesta');
+      const completion = await openai.chat.completions.create({
+        model: "openrouter/free",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 4000,
+        temperature: 0.3
+      });
+
+      const text = completion.choices[0].message?.content || '';
+      if (!text || text.includes('User Safety:')) {
+        throw new Error('La IA devolvió una respuesta vacía o bloqueada por filtro de seguridad.');
       }
-      nodes = JSON.parse(fixMissingCommas(jsonText));
-    } catch (parseError) {
-      console.error('Error parseando JSON de OpenRouter:', parseError.message);
-      console.error('Respuesta completa de OpenRouter:', cleanedText);
-      throw new Error('La respuesta de la IA no es un JSON válido');
-    }
 
-    // Completar enlaces reales si faltan
-    nodes = await enrichRoadmapLinks(nodes, language);
+      const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
-    // Calcular posiciones automáticas en el canvas (layout en zigzag vertical)
-    const SPACING_X = 350;
-    const SPACING_Y = 220;
-    nodes.forEach((node, index) => {
-      node.position = {
-        x: (index % 2) * SPACING_X + 100,
-        y: Math.floor(index / 2) * SPACING_Y + 100,
+      const extractJsonObject = (input) => {
+        const start = input.indexOf('{');
+        const end = input.lastIndexOf('}');
+        if (start === -1 || end === -1 || end < start) return null;
+        return input.slice(start, end + 1);
       };
-    });
 
-    return nodes;
+      const fixMissingCommas = (jsonString) => {
+        let cleaned = jsonString
+          .replace(/,\s*([}\]])/g, '$1')
+          .replace(/\[\s*,/g, '[')
+          .replace(/,\s*\]/g, ']');
+        cleaned = cleaned.replace(/"\s*[\n\r]+\s*"/g, '",\n"');
+        cleaned = cleaned.replace(/}\s*[\n\r]+\s*{/g, '},\n{');
+        return cleaned;
+      };
 
-  } catch (error) {
-    console.error("Error conectando con OpenRouter:", error);
-    throw new Error('Fallo en la comunicación con la IA');
+      const jsonText = extractJsonObject(cleanedText);
+      if (!jsonText) {
+        throw new Error('No se encontró un objeto JSON en la respuesta');
+      }
+      
+      let parsedData = JSON.parse(fixMissingCommas(jsonText));
+      let nodes = parsedData.roadmap || [];
+
+      // Completar enlaces reales si faltan
+      nodes = await enrichRoadmapLinks(nodes, language);
+
+      // Calcular posiciones automáticas en el canvas (layout en zigzag vertical)
+      const SPACING_X = 350;
+      const SPACING_Y = 220;
+      nodes.forEach((node, index) => {
+        node.position = {
+          x: (index % 2) * SPACING_X + 100,
+          y: Math.floor(index / 2) * SPACING_Y + 100,
+        };
+      });
+
+      return nodes;
+    } catch (error) {
+      attempt++;
+      console.error(`Intento ${attempt} fallido para generar Roadmap de ${language}:`, error.message);
+      if (attempt >= maxAttempts) {
+        throw new Error('Fallo en la comunicación con la IA tras varios intentos');
+      }
+      // Pequeña pausa antes de reintentar para no saturar la API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
   }
 };
 
@@ -167,9 +161,9 @@ const generateComparativeRoadmap = async (langA, langB) => {
 Eres un experto en educación en programación. Genera un análisis comparativo detallado entre "${langA}" y "${langB}" para estudiantes universitarios de Ingeniería en Sistemas (UNERG, Venezuela).
 
 Responde ÚNICAMENTE con un JSON válido sin texto adicional, sin bloques de código markdown.
-¡CRÍTICO! Asegúrate de poner TODAS las comas (,) requeridas entre las propiedades de los objetos (especialmente antes de "codeExample").
-¡CRÍTICO! NUNCA uses comillas dobles (") dentro de los valores de texto (como descripciones, resúmenes, etc). Si necesitas entrecomillar, usa SIEMPRE comillas simples (').
-¡CRÍTICO! NUNCA uses saltos de línea reales (Enter/Return) dentro de los valores de texto. Todo el texto debe estar en una sola línea física.
+¡CRÍTICO! Asegúrate de poner TODAS las comas (,) requeridas entre las propiedades de los objetos.
+¡CRÍTICO! NUNCA uses comillas dobles (") dentro de los valores de texto. Si necesitas entrecomillar, usa SIEMPRE comillas simples (').
+¡CRÍTICO! En los campos "codeA" y "codeB", NUNCA uses saltos de línea reales (Enter/Return). Usa SIEMPRE la secuencia de escape \\n para representar saltos de línea dentro del código.
 ¡CRÍTICO! Asegúrate de CERRAR todas las comillas dobles al final de cada valor. El JSON debe ser 100% estricto y válido.
 
 El JSON debe tener exactamente esta estructura:
@@ -200,111 +194,75 @@ El JSON debe tener exactamente esta estructura:
     },
     "verdict": "Recomendación final: cuándo elegir uno u otro, con cuál empezar y por qué."
   },
-  "nodesA": [
+  "codeExamples": [
     {
-      "id": "a-node-1",
-      "title": "Nombre del tema en ${langA}",
-      "description": "Descripción breve",
-      "level": "Básico | Intermedio | Avanzado",
-      "topics": [
-        {
-          "name": "tema1",
-          "description": "Explicación detallada del concepto",
-          "codeExample": "Opcional. Ejemplo de código en formato string."
-        }
-      ],
-      "position": { "x": 0, "y": 0 },
-      "dependsOn": []
-    }
-  ],
-  "nodesB": [
-    {
-      "id": "b-node-1",
-      "title": "Nombre del tema en ${langB}",
-      "description": "Descripción breve",
-      "level": "Básico | Intermedio | Avanzado",
-      "topics": [
-        {
-          "name": "tema1",
-          "description": "Explicación detallada del concepto",
-          "codeExample": "Opcional. Ejemplo de código en formato string."
-        }
-      ],
-      "position": { "x": 0, "y": 0 },
-      "dependsOn": []
+      "concept": "Nombre del concepto comparado (ej: Promesas / Async-Await)",
+      "description": "Breve descripción de qué hace este ejemplo y qué diferencias clave ilustra entre ambos lenguajes.",
+      "codeA": "// Código en ${langA}\\nlinea1\\nlinea2\\nlinea3",
+      "codeB": "// Código en ${langB}\\nlinea1\\nlinea2\\nlinea3"
     }
   ]
 }
 
-Genera entre 5 y 7 nodos para nodesA y 5 a 7 nodos para nodesB.
-Los ids de nodesA deben comenzar con "a-" y los de nodesB con "b-".
+Genera EXACTAMENTE 3 ejemplos de código en "codeExamples". Cada ejemplo debe comparar un concepto importante (variables, funciones, clases, etc). Los ejemplos deben ser cortos, al grano y mostrar claramente las diferencias de sintaxis.
 `;
 
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "openrouter/free",
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 4000,
-      temperature: 0.3
-    });
+  let attempt = 0;
+  const maxAttempts = 3;
 
-    const text = completion.choices[0].message?.content || '';
-    if (!text) throw new Error('La IA devolvió una respuesta vacía.');
-
-    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-    // Extraer el objeto JSON raíz
-    const extractJsonObject = (input) => {
-      const start = input.indexOf('{');
-      const end = input.lastIndexOf('}');
-      if (start === -1 || end === -1 || end < start) return null;
-      return input.slice(start, end + 1);
-    };
-
-    const fixMissingCommas = (s) => {
-      let cleaned = s
-        .replace(/,\s*([}\]])/g, '$1')
-        .replace(/\[\s*,/g, '[')
-        .replace(/,\s*\]/g, ']');
-      cleaned = cleaned.replace(/"\s*[\n\r]+\s*"/g, '",\n"');
-      cleaned = cleaned.replace(/}\s*[\n\r]+\s*{/g, '},\n{');
-      return cleaned;
-    };
-
-    let result;
+  while (attempt < maxAttempts) {
     try {
+      const completion = await openai.chat.completions.create({
+        model: "openrouter/free",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 4000,
+        temperature: 0.3
+      });
+
+      const text = completion.choices[0].message?.content || '';
+      if (!text || text.includes('User Safety:')) {
+        throw new Error('La IA devolvió una respuesta vacía o bloqueada por filtro de seguridad.');
+      }
+
+      const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+      // Extraer el objeto JSON raíz
+      const extractJsonObject = (input) => {
+        const start = input.indexOf('{');
+        const end = input.lastIndexOf('}');
+        if (start === -1 || end === -1 || end < start) return null;
+        return input.slice(start, end + 1);
+      };
+
+      const fixMissingCommas = (s) => {
+        let cleaned = s
+          .replace(/,\s*([}\]])/g, '$1')
+          .replace(/\[\s*,/g, '[')
+          .replace(/,\s*\]/g, ']');
+        cleaned = cleaned.replace(/"\s*[\n\r]+\s*"/g, '",\n"');
+        cleaned = cleaned.replace(/}\s*[\n\r]+\s*{/g, '},\n{');
+        return cleaned;
+      };
+
       const jsonText = extractJsonObject(cleanedText);
       if (!jsonText) throw new Error('No se encontró un objeto JSON en la respuesta comparativa');
-      result = JSON.parse(fixMissingCommas(jsonText));
-    } catch (parseError) {
-      console.error('Error parseando JSON comparativo:', parseError.message);
-      throw new Error('La respuesta de la IA para la comparación no es un JSON válido');
-    }
+      let result = JSON.parse(fixMissingCommas(jsonText));
 
-    // Calcular posiciones automáticas para cada set de nodos
-    const SPACING_X = 350;
-    const SPACING_Y = 220;
-    if (result.nodesA) {
-      result.nodesA.forEach((node, index) => {
-        node.position = {
-          x: (index % 2) * SPACING_X + 100,
-          y: Math.floor(index / 2) * SPACING_Y + 100,
-        };
-      });
-    }
-    if (result.nodesB) {
-      result.nodesB.forEach((node, index) => {
-        node.position = {
-          x: (index % 2) * SPACING_X + 100,
-          y: Math.floor(index / 2) * SPACING_Y + 100,
-        };
-      });
-    }
+      // Asegurarse de que codeExamples sea un array
+      if (!Array.isArray(result.codeExamples)) {
+        result.codeExamples = [];
+      }
 
-    return result;
-  } catch (error) {
-    console.error('Error en generateComparativeRoadmap:', error);
-    throw new Error('Fallo al generar la comparación con la IA');
+      return result;
+    } catch (error) {
+      attempt++;
+      console.error(`Intento ${attempt} fallido para generar Comparación ${langA} vs ${langB}:`, error.message);
+      if (attempt >= maxAttempts) {
+        throw new Error('Fallo al generar la comparación con la IA tras varios intentos');
+      }
+      // Pequeña pausa antes de reintentar para no saturar la API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
   }
 };
 

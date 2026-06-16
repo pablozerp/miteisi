@@ -69,7 +69,7 @@ export default function AdminUsersPage() {
   };
 
   const handleDeleteUser = async (userId, firstName) => {
-    if (!confirm(`🚨 ¿Estás seguro de que deseas ELIMINAR permanentemente a ${firstName}? Esta acción borrará todas sus hojas de ruta y no se puede deshacer.`)) return;
+    if (!confirm(` ¿Estás seguro de que deseas ELIMINAR permanentemente a ${firstName}? Esta acción borrará todas sus hojas de ruta y no se puede deshacer.`)) return;
     
     try {
       await deleteAdminUser(userId);

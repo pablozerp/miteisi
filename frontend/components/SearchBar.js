@@ -2,21 +2,21 @@
 import { useState } from 'react';
 
 const POPULAR_LANGUAGES = [
-  { name: 'Python', icon: '🐍' },
-  { name: 'JavaScript', icon: '⚡' },
-  { name: 'Java', icon: '☕' },
-  { name: 'C++', icon: '⚙️' },
-  { name: 'Go', icon: '🐹' },
-  { name: 'Rust', icon: '🦀' },
-  { name: 'TypeScript', icon: '📘' }
+  { name: 'Python', icon: '' },
+  { name: 'JavaScript', icon: '' },
+  { name: 'Java', icon: '' },
+  { name: 'C++', icon: '️' },
+  { name: 'Go', icon: '' },
+  { name: 'Rust', icon: '' },
+  { name: 'TypeScript', icon: '' }
 ];
 
 // Pares de comparación sugeridos
 const COMPARE_PAIRS = [
-  { a: 'Python', b: 'JavaScript', iconA: '🐍', iconB: '⚡' },
-  { a: 'React', b: 'Vue', iconA: '⚛️', iconB: '💚' },
-  { a: 'Java', b: 'Kotlin', iconA: '☕', iconB: '🟣' },
-  { a: 'SQL', b: 'MongoDB', iconA: '🗄️', iconB: '🍃' },
+  { a: 'Python', b: 'JavaScript', iconA: '', iconB: '' },
+  { a: 'React', b: 'Vue', iconA: '️', iconB: '' },
+  { a: 'Java', b: 'Kotlin', iconA: '', iconB: '🟣' },
+  { a: 'SQL', b: 'MongoDB', iconA: '️', iconB: '' },
 ];
 
 export default function SearchBar({ onSearch, onCompare, loading }) {

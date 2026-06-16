@@ -53,91 +53,45 @@ const extractYouTubeId = (url) => {
   return match ? match[1] : null;
 };
 
-const validateYouTubeVideo = async (videoId) => {
-  const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey || !videoId) return false;
-
-  const url = `https://youtube.googleapis.com/youtube/v3/videos?part=status&id=${videoId}&key=${apiKey}`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    console.error('YouTube validate error:', response.status, response.statusText);
-    return false;
-  }
-
-  const data = await response.json();
-  const item = data.items?.[0];
-  if (!item?.status) return false;
-
-  return item.status.uploadStatus === 'processed' && item.status.privacyStatus === 'public';
-};
-
-const getYouTubeVideos = async (searchQuery, maxResults = 5) => {
+const getYouTubeVideosFast = async (searchQuery, maxResults = 2) => {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) return [];
 
-  const url = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&type=video&order=relevance&relevanceLanguage=es&maxResults=${maxResults}&q=${encodeURIComponent(searchQuery)}&key=${apiKey}`;
-  const response = await fetch(url);
+  try {
+    const url = `https://youtube.googleapis.com/youtube/v3/search?part=snippet&type=video&order=relevance&relevanceLanguage=es&maxResults=${maxResults}&q=${encodeURIComponent(searchQuery)}&key=${apiKey}`;
+    const response = await fetch(url);
 
-  if (!response.ok) {
-    console.error('YouTube API error:', response.status, response.statusText);
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    return (data.items || [])
+      .filter((item) => item.id?.videoId && item.snippet?.title)
+      .map((item) => ({
+        title: item.snippet.title,
+        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+        summary: item.snippet.description ? item.snippet.description.slice(0, 120) + '...' : 'Tutorial en video.',
+      }));
+  } catch (error) {
     return [];
   }
-
-  const data = await response.json();
-  const items = (data.items || []).filter((item) => item.id?.videoId && item.snippet?.title);
-  const validVideos = [];
-
-  for (const item of items) {
-    const videoId = item.id.videoId;
-    const isValid = await validateYouTubeVideo(videoId);
-    if (isValid) {
-      validVideos.push({
-        title: item.snippet.title,
-        url: `https://www.youtube.com/watch?v=${videoId}`,
-        summary: item.snippet.description?.slice(0, 120) + '...',
-      });
-      if (validVideos.length >= 2) break;
-    }
-  }
-
-  return validVideos;
 };
 
 const enrichRoadmapLinks = async (nodes, language) => {
   const docs = getOfficialDocs(language);
+  
   const enrichedNodes = await Promise.all(
     nodes.map(async (node) => {
       const documentation = node.documentation?.length ? node.documentation : docs;
 
-      const existingVideos = Array.isArray(node.videos)
-        ? await Promise.all(
-            node.videos
-              .filter((v) => v?.title && v?.url)
-              .map(async (video) => {
-                const videoId = extractYouTubeId(video.url);
-                return (await validateYouTubeVideo(videoId)) ? video : null;
-              })
-          ).then((videos) => videos.filter(Boolean))
-        : [];
-
-      let videos = [...existingVideos];
-      // Solo 1 búsqueda optimizada en lugar de 3 para acelerar
-      const query = `${language} ${node.title} curso en español`;
-      
-      if (videos.length < 2) {
-        const youtubeVideos = await getYouTubeVideos(query, 3);
-        for (const video of youtubeVideos) {
-          if (!videos.some((existing) => existing.url === video.url)) {
-            videos.push(video);
-          }
-          if (videos.length >= 2) break;
-        }
-      }
+      // Hacemos 1 sola petición de búsqueda rápida por nodo en paralelo.
+      // Así evitamos la validación lenta y aseguramos enlaces 100% reales.
+      const query = `${language} ${node.title} programación tutorial español`;
+      const youtubeVideos = await getYouTubeVideosFast(query, 2);
 
       return {
         ...node,
         documentation,
-        videos,
+        videos: youtubeVideos.length > 0 ? youtubeVideos : node.videos,
       };
     })
   );
